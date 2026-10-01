@@ -13,7 +13,7 @@ const navigation = [
 const tracks = [
   { id: 1, title: 'The Night We Met', artist: 'Lord Huron', genre: 'Indie folk', mood: 'Nostalgic', duration: '3:28', cover: 'photo-1519608487953-e999c86e7455', color: '#b65f37', tags: ['night', 'nostalgic', 'cinematic', 'dreamy', 'calm', 'indie', 'late'] },
   { id: 2, title: 'Genesis', artist: 'Grimes', genre: 'Electronic', mood: 'Electric', duration: '4:15', cover: 'photo-1519608487953-e999c86e7455', color: '#b73d50', tags: ['energetic', 'electronic', 'rebellious', 'creative', 'night', 'gamer'] },
-  { id: 3, title: 'Space Song', artist: 'Beach House', genre: 'Dream pop', mood: 'Dreamy', duration: '5:20', cover: 'photo-1470225620780-dba8ba36b745', color: '#375b77', tags: ['dreamy', 'nostalgic', 'calm', 'atmospheric', 'night', 'indie'] },
+  { id: 3, title: 'Space Song', artist: 'Beach House', genre: 'Dream pop', mood: 'Dreamy', duration: '5:20', cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/e0/d5/09e0d559-0682-f0f0-5e0c-3cd11e3114fd/beachhouse_depressioncherry_2400_300.jpg/600x600bb.jpg', color: '#375b77', tags: ['dreamy', 'nostalgic', 'calm', 'atmospheric', 'night', 'indie'] },
   { id: 4, title: 'After Dark', artist: 'Mr.Kitty', genre: 'Darkwave', mood: 'Midnight', duration: '4:17', cover: 'photo-1519608487953-e999c86e7455', color: '#684b74', tags: ['dark', 'night', 'electronic', 'late', 'rebellious', 'focused'] },
   { id: 5, title: 'Sweet Disposition', artist: 'The Temper Trap', genre: 'Alternative', mood: 'Free', duration: '3:54', cover: 'photo-1470225620780-dba8ba36b745', color: '#9b7041', tags: ['energetic', 'alternative', 'cinematic', 'traveler', 'adventurous'] },
   { id: 6, title: 'Show Me How', artist: 'Men I Trust', genre: 'Indie', mood: 'Soft focus', duration: '3:35', cover: 'photo-1470252649378-9c29740c9fa8', color: '#66816c', tags: ['calm', 'dreamy', 'indie', 'study', 'focused', 'late'] },
@@ -44,17 +44,66 @@ const isPlaying = ref(false)
 const isExpanded = ref(false)
 const toast = ref('')
 const newMessage = ref('')
-const messages = ref([
-  { from: 'Mia Chen', text: 'Found the perfect song for your midnight library.', track: tracks[5] },
-  { from: 'You', text: 'This sounds like the last scene of a movie.' },
-  { from: 'Mia Chen', text: 'Exactly what I thought. Adding it to our archive ✳' },
-])
+const reactionOptions = ['❤️', '🔥', '🎵', '😂', '👀']
+const replyTarget = ref(null)
+const messageSwipe = ref(null)
+const activeMessageActionsId = ref(null)
+let messagePressTimer
+const showChatOptions = ref(false)
+const showDeleteConfirm = ref(false)
+const accountMenu = ref('')
 const chatFriends = [
-  { name: 'Mia Chen', handle: '@miac', active: true, track: 'Men I Trust · Show Me How', avatar: 'MC', color: '#e4a36a' },
-  { name: 'Jules Park', handle: '@julestunes', active: true, track: 'Beach House · Space Song', avatar: 'JP', color: '#8fa7d2' },
-  { name: 'Alex Rivera', handle: '@alexafterdark', active: false, track: 'Last seen 2h ago', avatar: 'AR', color: '#b9879c' },
+  { name: 'Drei Zamora', handle: '@dreizamora', active: true, track: 'Men I Trust · Show Me How', listeningTo: 'Show Me How — Men I Trust', avatar: 'DZ', color: '#e4a36a' },
+  { name: 'Lebron James', handle: '@lebronjames', active: true, track: 'Beach House · Space Song', listeningTo: 'Space Song — Beach House', avatar: 'LJ', color: '#8fa7d2' },
+  { name: 'James Ivan', handle: '@jamesivan', active: true, track: 'The Night We Met · Lord Huron', listeningTo: 'The Night We Met — Lord Huron', avatar: 'JI', color: '#78ad80' },
+  { name: 'Ryan', handle: '@ryan', active: false, track: 'Last seen 2h ago', listeningTo: 'Last seen 2h ago', avatar: 'RY', color: '#b9879c' },
+  { name: 'John Mico', handle: '@johnmico', active: false, track: 'Last seen yesterday', listeningTo: 'Last seen yesterday', avatar: 'JM', color: '#77b6c4' },
 ]
 const activeFriend = ref(0)
+const chatSongs = {
+  ilysb: { id: 'chat-lany-ilysb', title: 'ILYSB', artist: 'LANY', album: 'Make Out - EP', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/74/23/52/74235205-45aa-e94a-c1a6-cfd2fa495726/00602557074499.rgb.jpg/600x600bb.jpg', duration: '3:31' },
+  clouded: { id: 'chat-brent-clouded', title: 'Clouded', artist: 'Brent Faiyaz', album: 'F**k the World', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a4/e2/b2/a4e2b245-0296-b072-1700-e3ebbff687d0/193436188333_01_img001.jpg/600x600bb.jpg', duration: '3:06' },
+  passionfruit: { id: 'chat-drake-passionfruit', title: 'Passionfruit', artist: 'Drake', album: 'More Life', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/18/9d/b8/189db80b-bfa8-89d1-1514-5fcb7e5cf8f4/00602557611526.rgb.jpg/600x600bb.jpg', duration: '4:58' },
+  thatsWhatILike: { id: 'chat-bruno-thats-what-i-like', title: "That's What I Like", artist: 'Bruno Mars', album: '24K Magic', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/e3/47/a0/e347a0cc-87ce-5d05-d560-176c7d48f66e/075679904119.jpg/600x600bb.jpg', duration: '3:26' },
+  comeAndSeeMe: { id: 'chat-pnd-come-and-see-me', title: 'Come and See Me', artist: 'PARTYNEXTDOOR', album: 'PARTYNEXTDOOR 3 (P3)', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d0/27/3d/d0273d64-de3f-2336-422c-e3bc97f87771/93624916932.jpg/600x600bb.jpg', duration: '3:55' },
+  malibuNights: { id: 'chat-lany-malibu-nights', title: 'Malibu Nights', artist: 'LANY', album: 'Malibu Nights', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b4/35/dc/b435dcd6-1feb-b96f-46ce-9517b06c9e52/00602577021664.rgb.jpg/600x600bb.jpg', duration: '4:47' },
+  allMine: { id: 'chat-brent-all-mine', title: 'ALL MINE', artist: 'Brent Faiyaz', album: 'WASTELAND', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/30/1b/30/301b30ef-9bb5-8fbd-6bdc-30552aefd0c6/8DrDvnuaSqqztj1vOGwY_Wasteland-Final6.jpg/600x600bb.jpg', duration: '3:36' },
+  recognize: { id: 'chat-pnd-recognize', title: 'Recognize', artist: 'PARTYNEXTDOOR', album: 'PARTYNEXTDOOR TWO', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/9a/9c/51/9a9c517c-a528-118b-fe89-39afb8c93c84/27278.jpg/600x600bb.jpg', duration: '5:11' },
+  treasure: { id: 'chat-bruno-treasure', title: 'Treasure', artist: 'Bruno Mars', album: 'Unorthodox Jukebox', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/15/63/53/156353b8-d45b-a17d-f553-2d125aeb3cb3/075679957474.jpg/600x600bb.jpg', duration: '2:58' },
+}
+const conversations = ref({
+  '@dreizamora': [
+    { id: 'drei-1', from: 'Drei Zamora', text: 'ILYSB is still the perfect late-night drive song.', track: chatSongs.ilysb, reactions: { '❤️': ['Drei Zamora'], '🎵': ['You'] }, replyTo: null, timestamp: '10:42 PM' },
+    { id: 'drei-2', from: 'You', text: 'Adding it to the drive playlist. What else have you been playing?', reactions: { '🔥': ['You'] }, replyTo: null, timestamp: '10:43 PM' },
+    { id: 'drei-3', from: 'Drei Zamora', text: 'Brent Faiyaz. Clouded has been on repeat this week.', track: chatSongs.clouded, reactions: {}, replyTo: null, timestamp: '10:44 PM' },
+  ],
+  '@lebronjames': [
+    { id: 'lebron-1', from: 'Lebron James', text: 'Passionfruit is unbeatable when the sun goes down.', track: chatSongs.passionfruit, reactions: { '🎵': ['Lebron James'] }, replyTo: null, timestamp: '9:18 PM' },
+    { id: 'lebron-2', from: 'You', text: 'That whole mood, then some Bruno Mars to lift it back up.', reactions: {}, replyTo: null, timestamp: '9:20 PM' },
+    { id: 'lebron-3', from: 'Lebron James', text: "That's What I Like. No skips.", track: chatSongs.thatsWhatILike, reactions: { '🔥': ['You'] }, replyTo: null, timestamp: '9:21 PM' },
+  ],
+  '@jamesivan': [
+    { id: 'james-1', from: 'James Ivan', text: 'Come and See Me has that after-hours feel.', track: chatSongs.comeAndSeeMe, reactions: { '👀': ['You'] }, replyTo: null, timestamp: '8:03 PM' },
+    { id: 'james-2', from: 'You', text: 'Perfect for the ride home. LANY gets that same kind of atmosphere.', reactions: {}, replyTo: null, timestamp: '8:05 PM' },
+    { id: 'james-3', from: 'James Ivan', text: 'Malibu Nights is the one for me.', track: chatSongs.malibuNights, reactions: {}, replyTo: null, timestamp: '8:06 PM' },
+  ],
+  '@ryan': [
+    { id: 'ryan-1', from: 'Ryan', text: 'Been revisiting Brent Faiyaz lately. ALL MINE still hits.', track: chatSongs.allMine, reactions: { '❤️': ['You'] }, replyTo: null, timestamp: 'Yesterday' },
+    { id: 'ryan-2', from: 'You', text: 'That and some Drake make a solid weekend mix.', reactions: {}, replyTo: null, timestamp: 'Yesterday' },
+    { id: 'ryan-3', from: 'Ryan', text: 'Putting Passionfruit right after it.', track: chatSongs.passionfruit, reactions: {}, replyTo: null, timestamp: 'Yesterday' },
+  ],
+  '@johnmico': [
+    { id: 'john-1', from: 'John Mico', text: 'Treasure always gets the room moving.', track: chatSongs.treasure, reactions: { '🔥': ['John Mico'] }, replyTo: null, timestamp: 'Monday' },
+    { id: 'john-2', from: 'You', text: 'Then switch to something slower?', reactions: {}, replyTo: null, timestamp: 'Monday' },
+    { id: 'john-3', from: 'John Mico', text: 'Recognize by PARTYNEXTDOOR. Smooth landing.', track: chatSongs.recognize, reactions: {}, replyTo: null, timestamp: 'Monday' },
+  ],
+})
+const messages = computed(() => conversations.value[chatFriends[activeFriend.value].handle])
+const chatTypingText = computed(() => chatFriends[activeFriend.value].active ? `${chatFriends[activeFriend.value].name} is typing...` : '')
+function latestMessageTime(handle) {
+  const thread = conversations.value[handle] || []
+  return thread.at(-1)?.timestamp || 'NO MESSAGES'
+}
 const roomJoined = ref(false)
 const roomReaction = ref('')
 const showCreateLibrary = ref(false)
@@ -88,7 +137,7 @@ const recommendedTracks = computed(() => {
   }).slice(0, 4)
 })
 
-const imageUrl = (photo, width = 640) => `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=${width}&q=85`
+const imageUrl = (photo, width = 640) => photo?.startsWith('https://') ? photo : `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=${width}&q=85`
 
 let toastTimer
 function notify(message) {
@@ -106,6 +155,31 @@ function enterApp(validateEmail = false) {
   notify('Your sound is ready.')
 }
 
+function logout() {
+  clearTimeout(toastTimer)
+  welcome.value = true
+  activeView.value = 'home'
+  email.value = ''
+  password.value = ''
+  newMessage.value = ''
+  replyTarget.value = null
+  showChatOptions.value = false
+  showDeleteConfirm.value = false
+  accountMenu.value = ''
+  isExpanded.value = false
+  isPlaying.value = false
+  toast.value = ''
+}
+
+function toggleAccountMenu(location) {
+  accountMenu.value = accountMenu.value === location ? '' : location
+}
+
+function openProfile() {
+  accountMenu.value = ''
+  activeView.value = 'profile'
+}
+
 function generateSound() {
   if (!description.value.trim()) {
     notify('Tell us a little about yourself first')
@@ -119,7 +193,7 @@ function generateSound() {
 function playTrack(track) {
   if (currentTrack.value?.id === track.id) isPlaying.value = !isPlaying.value
   else {
-    currentTrack.value = track
+    currentTrack.value = track.albumArtwork ? { ...track, cover: track.albumArtwork } : track
     isPlaying.value = true
   }
 }
@@ -140,11 +214,183 @@ function createLibrary() {
   notify('New archive created')
 }
 
+function setReplyTarget(message) {
+  clearTimeout(messagePressTimer)
+  messageSwipe.value = null
+  activeMessageActionsId.value = null
+  replyTarget.value = {
+    id: message.id,
+    from: message.from,
+    text: message.text,
+    track: message.track || null,
+  }
+}
+
+function startMessageSwipe(event, message) {
+  if (event.button !== undefined && event.button !== 0) return
+  if (event.target.closest?.('button, a, input, textarea')) return
+
+  clearTimeout(messagePressTimer)
+  activeMessageActionsId.value = null
+  messageSwipe.value = {
+    id: message.id,
+    from: message.from,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    offset: 0,
+    longPressed: false,
+  }
+  event.currentTarget.setPointerCapture?.(event.pointerId)
+  messagePressTimer = setTimeout(() => {
+    const swipe = messageSwipe.value
+    if (swipe?.id === message.id && swipe.pointerId === event.pointerId && Math.abs(swipe.offset) < 10) {
+      swipe.longPressed = true
+      activeMessageActionsId.value = message.id
+    }
+  }, 500)
+}
+
+function moveMessageSwipe(event, message) {
+  const swipe = messageSwipe.value
+  if (!swipe || swipe.id !== message.id || swipe.pointerId !== event.pointerId) return
+  if (swipe.longPressed) return
+
+  const horizontalOffset = event.clientX - swipe.startX
+  const verticalOffset = event.clientY - swipe.startY
+  if (Math.abs(horizontalOffset) > 10 || Math.abs(verticalOffset) > 10) clearTimeout(messagePressTimer)
+  if (Math.abs(verticalOffset) > 14 && Math.abs(verticalOffset) > Math.abs(horizontalOffset)) {
+    messageSwipe.value = null
+    return
+  }
+
+  swipe.offset = swipe.from === 'You'
+    ? Math.max(-58, Math.min(0, horizontalOffset))
+    : Math.min(58, Math.max(0, horizontalOffset))
+}
+
+function endMessageSwipe(event, message) {
+  const swipe = messageSwipe.value
+  if (!swipe || swipe.id !== message.id || swipe.pointerId !== event.pointerId) return
+
+  clearTimeout(messagePressTimer)
+  const horizontalOffset = event.clientX - swipe.startX
+  const verticalOffset = event.clientY - swipe.startY
+  const longPressed = swipe.longPressed
+  messageSwipe.value = null
+
+  const replySwipeCompleted = swipe.from === 'You'
+    ? horizontalOffset <= -54 && -horizontalOffset > Math.abs(verticalOffset) * 1.3
+    : horizontalOffset >= 54 && horizontalOffset > Math.abs(verticalOffset) * 1.3
+
+  if (!longPressed && replySwipeCompleted) {
+    setReplyTarget(message)
+  }
+}
+
+function cancelMessageSwipe() {
+  clearTimeout(messagePressTimer)
+  messageSwipe.value = null
+}
+
+function openMessageActions(event, message) {
+  event.preventDefault()
+  clearTimeout(messagePressTimer)
+  activeMessageActionsId.value = message.id
+}
+
+function closeMessageActions() {
+  activeMessageActionsId.value = null
+}
+
+function cancelReply() {
+  replyTarget.value = null
+}
+
+function selectChat(index) {
+  activeFriend.value = index
+  replyTarget.value = null
+  newMessage.value = ''
+  activeMessageActionsId.value = null
+  showChatOptions.value = false
+}
+
+function requestDeleteConversation() {
+  showChatOptions.value = false
+  showDeleteConfirm.value = true
+}
+
+function deleteConversation() {
+  conversations.value[chatFriends[activeFriend.value].handle] = []
+  replyTarget.value = null
+  activeMessageActionsId.value = null
+  newMessage.value = ''
+  showDeleteConfirm.value = false
+  notify('Conversation deleted')
+}
+
+function toggleReaction(messageId, emoji) {
+  const message = messages.value.find((item) => item.id === messageId)
+  if (!message) return
+
+  const reactions = message.reactions || {}
+  const users = reactions[emoji] || []
+
+  if (users.includes('You')) {
+    reactions[emoji] = users.filter((user) => user !== 'You')
+    if (!reactions[emoji].length) delete reactions[emoji]
+  } else {
+    reactions[emoji] = [...users, 'You']
+  }
+
+  message.reactions = reactions
+  closeMessageActions()
+}
+
+function unsendMessage(messageId) {
+  const messageIndex = messages.value.findIndex((message) => message.id === messageId && message.from === 'You')
+  if (messageIndex === -1) return
+
+  messages.value.splice(messageIndex, 1)
+  if (replyTarget.value?.id === messageId) replyTarget.value = null
+  closeMessageActions()
+  notify('Message unsent')
+}
+
+function shareCurrentSong() {
+  if (!currentTrack.value) {
+    notify('No track selected to share')
+    return
+  }
+
+  messages.value.push({
+    id: `msg-${Date.now()}`,
+    from: 'You',
+    text: 'Listening to this right now.',
+    track: currentTrack.value,
+    reactions: { '🎵': ['You'] },
+    replyTo: null,
+    timestamp: 'JUST NOW',
+  })
+
+  notify('Track shared to chat')
+}
+
 function sendMessage() {
   const text = newMessage.value.trim()
   if (!text) return
-  messages.value.push({ from: 'You', text })
+
+  messages.value.push({
+    id: `msg-${Date.now()}`,
+    from: 'You',
+    text,
+    reactions: {},
+    replyTo: replyTarget.value ? { ...replyTarget.value } : null,
+    timestamp: 'JUST NOW',
+  })
+
   newMessage.value = ''
+  replyTarget.value = null
 }
 
 async function copyShareLink() {
@@ -249,11 +495,11 @@ watch(theme, (value) => {
         </button>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom">
-          <div class="avatar avatar-small">Z</div><div class="sidebar-user"><strong>zorok</strong><span>FREE FREQUENCY</span></div><button class="more-button" aria-label="Account menu" @click="activeView = 'profile'">···</button>
+          <div class="avatar avatar-small">Z</div><div class="sidebar-user"><strong>zorok</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
         </div>
       </aside>
 
-      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><button class="mobile-avatar" @click="activeView = 'profile'">Z</button></header>
+      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">Z</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div></header>
 
       <main class="main-content">
         <header class="topbar">
@@ -261,7 +507,7 @@ watch(theme, (value) => {
           <label class="search-box"><span>⌕</span><input v-model="search" placeholder="Find a feeling, a sound..." aria-label="Search your music" /><kbd>⌘ K</kbd></label>
           <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
           <button class="notification-button" aria-label="Notifications" @click="notify('You are all caught up.')">♧<i></i></button>
-          <button class="top-avatar" @click="activeView = 'profile'">Z</button>
+          <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
         </header>
 
         <template v-if="activeView === 'home'">
@@ -320,9 +566,90 @@ watch(theme, (value) => {
           <section v-if="libraryTab === 'Artists'" class="content-section"><div class="section-title-row"><div><span class="section-index">02 / ARTISTS</span><h2>In your <em>orbit.</em></h2></div></div><div v-for="artist in artistMatches" :key="artist.name" class="artist-row"><img :src="imageUrl(artist.cover, 180)" :alt="`${artist.name} artist artwork`" /><strong>{{ artist.name }}</strong><span>{{ artist.genre }}</span><b>↗</b></div></section>
         </template>
 
+        
         <template v-else-if="activeView === 'chat'">
           <section class="page-heading"><span class="section-index">SYNX / 04</span><h1>THE BEST SONGS<br><em>ARE SHARED.</em></h1><p>Send a track. Start a story.</p></section>
-          <section class="chat-layout"><aside class="friends-panel"><div class="friends-heading"><span class="section-index">YOUR PEOPLE</span><button @click="notify('Invite link copied')">+</button></div><button v-for="(friend, index) in chatFriends" :key="friend.handle" class="friend-row" :class="{ 'friend-active': activeFriend === index }" @click="activeFriend = index"><span class="avatar friend-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span><span class="friend-info"><strong>{{ friend.name }}</strong><small>{{ friend.track }}</small></span><i class="friend-presence" :class="{ online: friend.active }"></i></button></aside><div class="chat-window"><div class="chat-window-head"><div class="avatar friend-avatar" :style="{ backgroundColor: chatFriends[activeFriend].color }">{{ chatFriends[activeFriend].avatar }}</div><div><strong>{{ chatFriends[activeFriend].name }}</strong><span>{{ chatFriends[activeFriend].active ? 'ONLINE NOW' : 'OFFLINE' }}</span></div><button class="more-button" @click="notify('Conversation options')">···</button></div><div class="chat-messages"><div v-for="(message, index) in messages" :key="index" class="chat-message" :class="{ 'message-mine': message.from === 'You' }"><span class="message-author">{{ message.from }}</span><p>{{ message.text }}</p><div v-if="message.track" class="shared-track"><img :src="imageUrl(message.track.cover, 150)" alt="" /><div><strong>{{ message.track.title }}</strong><span>{{ message.track.artist }}</span></div><button @click="playTrack(message.track)">▶</button></div><time>{{ index === messages.length - 1 ? 'JUST NOW' : '10:42 PM' }}</time></div></div><form class="chat-composer" @submit.prevent="sendMessage"><input v-model="newMessage" placeholder="Send a thought, a track, a feeling..." aria-label="Message" /><button type="button" aria-label="Share a track" @click="messages.push({ from: 'You', text: 'A little piece of my current sound:', track: currentTrack })">♫</button><button class="send-button" type="submit" aria-label="Send message">↗</button></form></div></section>
+          <section class="chat-layout">
+            <aside class="friends-panel">
+              <div class="friends-heading"><span class="section-index">YOUR PEOPLE</span><button @click="notify('Invite link copied')">+</button></div>
+              <button v-for="(friend, index) in chatFriends" :key="friend.handle" class="friend-row" :class="{ 'friend-active': activeFriend === index }" @click="selectChat(index)">
+                <span class="avatar friend-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span>
+                <span class="friend-info"><strong>{{ friend.name }}</strong><small>{{ friend.track }}</small><time class="friend-time">{{ latestMessageTime(friend.handle) }}</time></span>
+                <i class="friend-presence" :class="{ online: friend.active }"></i>
+              </button>
+            </aside>
+            <div class="chat-window">
+              <div class="chat-window-head">
+                <div class="avatar friend-avatar" :style="{ backgroundColor: chatFriends[activeFriend].color }">{{ chatFriends[activeFriend].avatar }}</div>
+                <div>
+                  <strong>{{ chatFriends[activeFriend].name }}</strong>
+                  <span>{{ chatFriends[activeFriend].active ? 'ONLINE NOW' : 'OFFLINE' }}</span>
+                </div>
+                <div class="chat-options" @keydown.esc="showChatOptions = false">
+                  <button class="more-button" type="button" aria-label="Conversation options" aria-haspopup="menu" :aria-expanded="showChatOptions" @click="showChatOptions = !showChatOptions">···</button>
+                  <div v-if="showChatOptions" class="chat-options-menu" role="menu">
+                    <button type="button" role="menuitem" @click="requestDeleteConversation">DELETE CONVERSATION</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-messages">
+                <p v-if="!messages.length" class="empty-state chat-empty-state">No messages in this conversation.</p>
+                <div v-for="(message, index) in messages" :key="message.id || index" class="chat-message" :class="{ 'message-mine': message.from === 'You', 'message-swiping': messageSwipe?.id === message.id, 'message-actions-open': activeMessageActionsId === message.id, 'swipe-reply-ready': messageSwipe?.id === message.id && messageSwipe.offset >= 18 }" :style="messageSwipe?.id === message.id ? { '--swipe-offset': `${messageSwipe.offset}px` } : null" @pointerdown="startMessageSwipe($event, message)" @pointermove="moveMessageSwipe($event, message)" @pointerup="endMessageSwipe($event, message)" @pointercancel="cancelMessageSwipe" @contextmenu="openMessageActions($event, message)">
+                  <div class="message-meta">
+                    <span class="message-author">{{ message.from }}</span>
+                    <div v-if="activeMessageActionsId === message.id" class="message-actions">
+                      <button type="button" class="mini-action" @click="setReplyTarget(message)" aria-label="Reply">↩</button>
+                      <button v-if="message.from === 'You'" type="button" class="mini-action unsend-button" @click="unsendMessage(message.id)" aria-label="Unsend message" title="Unsend message">↶</button>
+                      <button v-for="emoji in reactionOptions" :key="emoji" type="button" class="mini-action" @click="toggleReaction(message.id, emoji)" :aria-label="`React with ${emoji}`">{{ emoji }}</button>
+                    </div>
+                  </div>
+
+                  <p>{{ message.text }}</p>
+
+                  <div v-if="message.replyTo" class="reply-preview">
+                    <span>Replying to {{ message.replyTo.from }}</span>
+                    <strong>{{ message.replyTo.text }}</strong>
+                  </div>
+
+                  <div v-if="message.track" class="shared-track">
+                    <img :src="message.track.albumArtwork" :alt="`${message.track.album} album cover`" loading="lazy" />
+                    <div>
+                      <strong>{{ message.track.title }}</strong>
+                      <span>{{ message.track.artist }}</span>
+                      <small>{{ message.track.album }}</small>
+                    </div>
+                    <button type="button" @click="playTrack(message.track)">▶</button>
+                  </div>
+
+                  <div class="message-footer">
+                    <div v-if="message.reactions && Object.keys(message.reactions).length" class="reaction-row">
+                      <button v-for="(users, emoji) in message.reactions" :key="emoji" type="button" class="reaction-pill" :class="{ 'reaction-selected': users.includes('You') }" @click="toggleReaction(message.id, emoji)">
+                        <span>{{ emoji }}</span>
+                        <strong>{{ users.length }}</strong>
+                      </button>
+                    </div>
+                    <time>{{ message.timestamp }}</time>
+                  </div>
+                </div>
+              </div>
+
+              <form class="chat-composer" @submit.prevent="sendMessage">
+                <div v-if="replyTarget" class="reply-preview composer-reply">
+                  <span>Replying to {{ replyTarget.from }}</span>
+                  <button type="button" class="cancel-reply" @click="cancelReply">×</button>
+                </div>
+
+                <div class="composer-row">
+                  <input v-model="newMessage" placeholder="Send a thought, a track, a feeling..." aria-label="Message" />
+                  <button type="button" class="share-button" aria-label="Share current track" @click="shareCurrentSong">↗</button>
+                  <button type="submit" class="send-button">SEND</button>
+                </div>
+
+                <div v-if="chatTypingText" class="typing-indicator">{{ chatTypingText }}</div>
+              </form>
+            </div>
+          </section>
         </template>
 
         <template v-else-if="activeView === 'groups'">
@@ -330,6 +657,7 @@ watch(theme, (value) => {
         </template>
 
         <template v-else-if="activeView === 'profile'">
+          <div class="profile-session-actions"><button type="button" class="profile-logout-button" @click="logout">LOG OUT ↗</button></div>
           <section class="profile-hero"><div class="profile-cover"><img :src="imageUrl('photo-1519608487953-e999c86e7455', 1300)" alt="Twilight sky above a distant city" /><span>PERSONAL FREQUENCY ID // 0001</span></div><div class="profile-details"><div class="profile-avatar">Z<span>✳</span></div><div class="profile-title"><span class="section-index">@ZOROK <i class="live-dot"></i> FREQUENCY ACTIVE</span><h1>{{ profileName }}<span class="orange-period">.</span></h1><p>A collector of late-night feelings, long drives, and songs that stay after the credits.</p></div><button class="switch-button switch-dark" @click="notify('Identity card link copied')">↗ SHARE MY IDENTITY</button></div></section><section class="profile-grid"><div class="profile-module"><span class="section-index">01 / MY SOUND</span><h2>THE FREQUENCIES<br>I RETURN TO.</h2><div class="genre-tags profile-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">INDIE</span><span class="genre-chip chip-green">ELECTRONIC</span><span class="genre-chip chip-pink">LO-FI</span><span class="genre-chip chip-yellow">DREAM POP</span></div></div><div class="profile-module"><span class="section-index">02 / PERSONALITY IN WAVES</span><h2>YOUR INNER<br>EQUALIZER.</h2><div class="personality-bars"><div v-for="(stat, index) in [{ name: 'ENERGY', value: 72 }, { name: 'EMOTION', value: 91 }, { name: 'EXPERIMENT', value: 68 }, { name: 'NOSTALGIA', value: 96 }, { name: 'DANCE', value: 43 }]" :key="stat.name"><span>{{ stat.name }}</span><i><b :style="{ width: `${stat.value}%`, backgroundColor: ['#f36b3e', '#70b9c6', '#78ad80', '#e58e9d', '#e8bf53'][index] }"></b></i><strong>{{ stat.value }}</strong></div></div></div><div class="profile-module profile-library-module"><span class="section-index">03 / SHARED WITH THE WORLD</span><h2>YOUR OPEN<br>ARCHIVES.</h2><div v-for="library in libraries.filter(item => item.saved).slice(0, 2)" :key="library.id" class="profile-library-row"><img :src="imageUrl(library.cover, 120)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} TRACKS · PUBLIC</span></div><b>↗</b></div></div><div class="profile-module profile-mood-module"><span class="section-index">04 / CURRENTLY FEELING</span><h2>THE MOOD<br>IS A PLACE.</h2><div class="profile-moods"><span>✳ NOSTALGIC</span><span>◷ LATE NIGHT</span><span>↗ RESTLESS</span><span>♫ SOFT FOCUS</span></div><button class="inline-link" @click="activeView = 'discover'">UPDATE YOUR SOUND <span>↗</span></button></div></section>
         </template>
 
@@ -337,12 +665,12 @@ watch(theme, (value) => {
           <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries.slice(0, 3)" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
-        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button></footer>
+        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">LOG OUT ↗</button></footer>
       </main>
 
       <aside class="right-rail">
         <div class="rail-title"><span>ON YOUR FREQUENCY</span><button aria-label="More activity" @click="notify('You are all caught up.')">···</button></div>
-        <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button></div><div class="mini-progress"><span></span></div><div class="player-times"><span>2:14</span><span>{{ currentTrack?.duration }}</span></div><div class="mini-controls"><button @click="notify('Previous track')">|◀</button><button class="mini-play" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
+        <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><div class="now-playing-actions"><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button><button class="track-share-button" type="button" @click="shareCurrentSong">↗</button></div></div><div class="mini-progress"><span></span></div><div class="player-times"><span>2:14</span><span>{{ currentTrack?.duration }}</span></div><div class="mini-controls"><button @click="notify('Previous track')">|◀</button><button class="mini-play" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
         <section class="rail-friends"><div class="rail-subhead"><span>YOUR PEOPLE</span><button @click="activeView = 'chat'">ALL ↗</button></div><button v-for="friend in chatFriends.slice(0, 2)" :key="friend.handle" class="rail-friend" @click="activeView = 'chat'"><span class="avatar rail-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span><span><strong>{{ friend.name }}</strong><small>{{ friend.active ? 'LISTENING NOW' : 'OFFLINE' }}</small></span><b>♫</b></button></section>
         <section class="rail-room"><span class="section-index">LISTENING TOGETHER</span><div class="rail-room-art"><img :src="imageUrl('photo-1470252649378-9c29740c9fa8', 300)" alt="Sun setting over an open landscape" /><span>6 FRIENDS<br>IN THE ROOM</span></div><strong>THE MIDNIGHT CREW</strong><button @click="activeView = 'groups'">JOIN THE ROOM <span>↗</span></button></section>
         <div class="rail-quote"><span>“</span><p>Some songs know you before you know yourself.</p><small>SYNX FIELD NOTE 001</small></div>
@@ -353,6 +681,7 @@ watch(theme, (value) => {
       <div v-if="isExpanded" class="player-overlay" @click.self="isExpanded = false"><button class="close-expanded" aria-label="Close player" @click="isExpanded = false">×</button><div class="expanded-player"><span class="section-index">SYNX / NOW PLAYING</span><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="currentTrack?.title" /><div class="expanded-track-info"><div><h2>{{ currentTrack?.title }}</h2><p>{{ currentTrack?.artist }} · {{ currentTrack?.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button></div><div class="mini-progress"><span></span></div><div class="player-times"><span>2:14</span><span>{{ currentTrack?.duration }}</span></div><div class="mini-controls expanded-controls"><button @click="notify('Previous track')">|◀</button><button class="mini-play" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button></div><div class="expanded-actions"><button @click="toggleSaved(currentTrack)">♡ SAVE TO ARCHIVE</button><button @click="copyShareLink">↗ SHARE THIS SOUND</button></div></div></div>
 
       <div v-if="showCreateLibrary" class="modal-backdrop" @click.self="showCreateLibrary = false"><form class="create-modal" @submit.prevent="createLibrary"><button type="button" class="modal-close" aria-label="Close" @click="showCreateLibrary = false">×</button><span class="section-index">SYNX ARCHIVE SYSTEM // NEW</span><h2>GIVE IT A<br><em>FEELING.</em></h2><label for="library-name">ARCHIVE NAME</label><input id="library-name" v-model="libraryName" placeholder="e.g. Blue hour, no plans" maxlength="32" /><button class="switch-button switch-orange" type="submit">CREATE ARCHIVE <span>↗</span></button></form></div>
+      <div v-if="showDeleteConfirm" class="modal-backdrop chat-delete-backdrop" @click.self="showDeleteConfirm = false"><section class="create-modal chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><button type="button" class="modal-close" aria-label="Close" @click="showDeleteConfirm = false">×</button><span class="section-index">SYNX / CONVERSATION OPTIONS</span><h2 id="delete-chat-title">DELETE THIS<br><em>CONVERSATION?</em></h2><p>This clears the messages with {{ chatFriends[activeFriend].name }}.</p><div class="chat-delete-actions"><button type="button" @click="showDeleteConfirm = false">CANCEL</button><button type="button" @click="deleteConversation">DELETE</button></div></section></div>
       <Transition name="toast"><div v-if="toast" class="toast-message"><span>✳</span>{{ toast }}</div></Transition>
     </div>
   </div>
@@ -391,9 +720,31 @@ watch(theme, (value) => {
 .dashboard[data-theme="dark"] .library-tabs button{border-color:transparent;color:#aaa79e}.dashboard[data-theme="dark"] .library-tabs button.selected{border-color:var(--orange);color:var(--ink)}.dashboard[data-theme="dark"] .chat-layout{border-color:var(--line);background:#242520}.dashboard[data-theme="dark"] .friends-panel,.dashboard[data-theme="dark"] .chat-window-head,.dashboard[data-theme="dark"] .chat-composer{border-color:var(--line)}.dashboard[data-theme="dark"] .friend-row.friend-active,.dashboard[data-theme="dark"] .chat-composer input{background:#30312b}.dashboard[data-theme="dark"] .chat-message{background:#34352f}.dashboard[data-theme="dark"] .chat-message.message-mine{background:#633b2d}.dashboard[data-theme="dark"] .chat-message p,.dashboard[data-theme="dark"] .shared-track strong{color:#f1eee6}.dashboard[data-theme="dark"] .shared-track{background:#242520}.dashboard[data-theme="dark"] .shared-track span{color:#aaa79e}.dashboard[data-theme="dark"] .chat-composer>button{border-color:#55564e;color:var(--ink)}.dashboard[data-theme="dark"] .chat-composer .send-button{border-color:var(--orange);background:var(--orange);color:#171714}
 .dashboard[data-theme="dark"] .profile-grid{border-color:var(--line)}.dashboard[data-theme="dark"] .profile-module{border-color:var(--line)}.dashboard[data-theme="dark"] .personality-bars>div>i{background:#42433c}.dashboard[data-theme="dark"] .profile-moods span{border-color:var(--line);color:#d2cec3}.dashboard[data-theme="dark"] .create-modal,.dashboard[data-theme="dark"] .expanded-player{border-color:#55564e;background:#242520;color:var(--ink)}.dashboard[data-theme="dark"] .create-modal label{color:#aaa79e}.dashboard[data-theme="dark"] .expanded-actions button{border-color:#55564e;color:var(--ink)}.dashboard[data-theme="dark"] .empty-state{border-color:var(--line);color:#aaa79e}
 
+
+
+/* Chat interaction detail */
+.chat-layout{display:grid;grid-template-columns:205px 1fr;min-height:490px;margin-top:21px;border:1px solid #c6c2b6;background:#f4f1ea;box-shadow:4px 4px 0 rgba(0,0,0,.04)}.friends-panel{display:flex;flex-direction:column;border-right:1px solid var(--line);background:rgba(255,255,255,.16)}.friends-heading{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid var(--line)}.friends-heading button{width:20px;height:20px;border:1px solid #c6c2b6;background:transparent;color:var(--orange)}.friend-row{width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}.friend-row.friend-active{background:#efe9df}.friend-avatar{position:relative}.friend-avatar i{position:absolute;right:-1px;bottom:-1px;width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid var(--paper)}.friend-info{display:grid;gap:3px;min-width:0}.friend-info strong{font-size:10px}.friend-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#77766f}.friend-presence{margin-left:auto;width:8px;height:8px;border-radius:50%;background:#808173;box-shadow:0 0 0 2px rgba(0,0,0,.08)}.friend-presence.online{background:var(--green)}.chat-window{display:flex;flex-direction:column;min-height:0}.chat-window-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}.chat-window-head>div:nth-child(2){display:grid;gap:3px;flex:1}.chat-window-head>div span{color:#77766f}.chat-window-head .more-button{margin-left:auto}.chat-messages{display:flex;flex:1;flex-direction:column;gap:12px;padding:16px 18px 10px;overflow:auto}.chat-message{display:flex;flex-direction:column;align-self:flex-start;max-width:78%;padding:12px 12px 10px;border:1px solid var(--line);background:#f7f3ea;border-radius:14px 14px 14px 4px}.chat-message.message-mine{align-self:flex-end;border-radius:14px 14px 4px 14px;background:#f2e3d9}.message-meta{display:flex;align-items:center;justify-content:space-between;gap:10px}.message-author{font-family:var(--mono);font-size:8px;color:#7d7a73;text-transform:uppercase}.message-actions{display:flex;align-items:center;gap:4px}.mini-action{padding:2px 4px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:10px}.chat-message p{margin:10px 0 0;line-height:1.5;color:#1f1f1d}.message-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.chat-message time{font-family:var(--mono);font-size:7px;color:#7d7a73;text-transform:uppercase}.reaction-row{display:flex;flex-wrap:wrap;gap:6px}.reaction-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border:1px solid var(--line);background:rgba(255,255,255,.35);font-family:var(--mono);font-size:7px}.reaction-pill.reaction-selected{border-color:var(--orange);color:var(--orange)}.reply-preview{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:7px 8px;border:1px dashed var(--line);background:rgba(255,255,255,.18);font-family:var(--mono);font-size:7px;text-transform:uppercase;color:#5e5b53}.reply-preview strong{font-size:8px;font-weight:600;color:var(--ink)}.composer-reply{margin:0 0 8px}.cancel-reply{border:0;background:none;padding:0;color:var(--orange);font-size:15px;line-height:1}.chat-composer{display:flex;flex-direction:column;padding:10px 14px 14px;border-top:1px solid var(--line);background:rgba(255,255,255,.1)}.composer-row{display:flex;align-items:center;gap:8px}.chat-composer input{flex:1;height:38px;padding:0 12px;border:1px solid #c6c2b6;background:#f1eee6;color:var(--ink)}.share-button,.send-button{height:38px;border:1px solid #c6c2b6;background:transparent;font-family:var(--mono);font-size:8px;text-transform:uppercase}.share-button{width:38px}.send-button{padding:0 14px;border-color:var(--orange);background:var(--orange);color:#171714}.typing-indicator{margin-top:8px;color:#767267;font-family:var(--mono);font-size:8px}.shared-track{display:flex;align-items:center;gap:10px;margin-top:10px;padding:7px;border:1px solid var(--line);background:rgba(255,255,255,.35)}.shared-track img{width:46px;height:46px;object-fit:cover}.shared-track div{display:grid;gap:2px;flex:1}.shared-track strong{font-size:10px}.shared-track span{color:#77766f;font-size:9px}.shared-track button{width:32px;height:32px;border:1px solid var(--line);background:transparent}.dashboard[data-theme="dark"] .chat-layout{border-color:var(--line);background:#242520}.dashboard[data-theme="dark"] .friends-panel,.dashboard[data-theme="dark"] .chat-window-head,.dashboard[data-theme="dark"] .chat-composer,.dashboard[data-theme="dark"] .chat-message,.dashboard[data-theme="dark"] .shared-track,.dashboard[data-theme="dark"] .reply-preview{border-color:var(--line)}.dashboard[data-theme="dark"] .friend-row.friend-active{background:#30312b}.dashboard[data-theme="dark"] .friend-info small,.dashboard[data-theme="dark"] .message-author,.dashboard[data-theme="dark"] .message-footer time,.dashboard[data-theme="dark"] .reply-preview,.dashboard[data-theme="dark"] .typing-indicator{color:#aaa79e}.dashboard[data-theme="dark"] .chat-composer input{background:#1e1f1b}.dashboard[data-theme="dark"] .share-button,.dashboard[data-theme="dark"] .send-button,.dashboard[data-theme="dark"] .mini-action{border-color:#55564e;color:var(--ink)}.dashboard[data-theme="dark"] .chat-message{background:#34352f}.dashboard[data-theme="dark"] .chat-message.message-mine{background:#633b2d}.dashboard[data-theme="dark"] .chat-message p,.dashboard[data-theme="dark"] .shared-track strong{color:#f1eee6}.dashboard[data-theme="dark"] .shared-track{background:#242520}.dashboard[data-theme="dark"] .shared-track span{color:#aaa79e}.dashboard[data-theme="dark"] .reaction-pill{background:#1f201d}
+
+
+/* Chat interaction detail */
+.chat-layout{display:grid;grid-template-columns:205px 1fr;min-height:490px;margin-top:21px;border:1px solid #c6c2b6;background:#f4f1ea;box-shadow:4px 4px 0 rgba(0,0,0,.04)}.friends-panel{display:flex;flex-direction:column;border-right:1px solid var(--line);background:rgba(255,255,255,.16)}.friends-heading{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px;border-bottom:1px solid var(--line)}.friends-heading button{width:20px;height:20px;border:1px solid #c6c2b6;background:transparent;color:var(--orange)}.friend-row{width:100%;display:flex;align-items:center;gap:8px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left}.friend-row.friend-active{background:#efe9df}.friend-avatar{position:relative}.friend-avatar i{position:absolute;right:-1px;bottom:-1px;width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid var(--paper)}.friend-info{display:grid;gap:3px;min-width:0}.friend-info strong{font-size:10px}.friend-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#77766f}.friend-presence{margin-left:auto;width:8px;height:8px;border-radius:50%;background:#808173;box-shadow:0 0 0 2px rgba(0,0,0,.08)}.friend-presence.online{background:var(--green)}.chat-window{display:flex;flex-direction:column;min-height:0}.chat-window-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}.chat-window-head>div:nth-child(2){display:grid;gap:3px;flex:1}.chat-window-head>div span{color:#77766f}.chat-window-head .more-button{margin-left:auto}.chat-messages{display:flex;flex:1;flex-direction:column;gap:12px;padding:16px 18px 10px;overflow:auto}.chat-message{display:flex;flex-direction:column;align-self:flex-start;max-width:78%;padding:12px 12px 10px;border:1px solid var(--line);background:#f7f3ea;border-radius:14px 14px 14px 4px}.chat-message.message-mine{align-self:flex-end;border-radius:14px 14px 4px 14px;background:#f2e3d9}.message-meta{display:flex;align-items:center;justify-content:space-between;gap:10px}.message-author{font-family:var(--mono);font-size:8px;color:#7d7a73;text-transform:uppercase}.message-actions{display:flex;align-items:center;gap:4px}.mini-action{padding:2px 4px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:10px}.chat-message p{margin:10px 0 0;line-height:1.5;color:#1f1f1d}.message-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.chat-message time{font-family:var(--mono);font-size:7px;color:#7d7a73;text-transform:uppercase}.reaction-row{display:flex;flex-wrap:wrap;gap:6px}.reaction-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border:1px solid var(--line);background:rgba(255,255,255,.35);font-family:var(--mono);font-size:7px}.reaction-pill.reaction-selected{border-color:var(--orange);color:var(--orange)}.reply-preview{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:7px 8px;border:1px dashed var(--line);background:rgba(255,255,255,.18);font-family:var(--mono);font-size:7px;text-transform:uppercase;color:#5e5b53}.reply-preview strong{font-size:8px;font-weight:600;color:var(--ink)}.composer-reply{margin:0 0 8px}.cancel-reply{border:0;background:none;padding:0;color:var(--orange);font-size:15px;line-height:1}.chat-composer{display:flex;flex-direction:column;padding:10px 14px 14px;border-top:1px solid var(--line);background:rgba(255,255,255,.1)}.composer-row{display:flex;align-items:center;gap:8px}.chat-composer input{flex:1;height:38px;padding:0 12px;border:1px solid #c6c2b6;background:#f1eee6;color:var(--ink)}.share-button,.send-button{height:38px;border:1px solid #c6c2b6;background:transparent;font-family:var(--mono);font-size:8px;text-transform:uppercase}.share-button{width:38px}.send-button{padding:0 14px;border-color:var(--orange);background:var(--orange);color:#171714}.typing-indicator{margin-top:8px;color:#767267;font-family:var(--mono);font-size:8px}.shared-track{display:flex;align-items:center;gap:10px;margin-top:10px;padding:7px;border:1px solid var(--line);background:rgba(255,255,255,.35)}.shared-track img{width:46px;height:46px;object-fit:cover}.shared-track div{display:grid;gap:2px;flex:1}.shared-track strong{font-size:10px}.shared-track span{color:#77766f;font-size:9px}.shared-track button{width:32px;height:32px;border:1px solid var(--line);background:transparent}.dashboard[data-theme="dark"] .chat-layout{border-color:var(--line);background:#242520}.dashboard[data-theme="dark"] .friends-panel,.dashboard[data-theme="dark"] .chat-window-head,.dashboard[data-theme="dark"] .chat-composer,.dashboard[data-theme="dark"] .chat-message,.dashboard[data-theme="dark"] .shared-track,.dashboard[data-theme="dark"] .reply-preview{border-color:var(--line)}.dashboard[data-theme="dark"] .friend-row.friend-active{background:#30312b}.dashboard[data-theme="dark"] .friend-info small,.dashboard[data-theme="dark"] .message-author,.dashboard[data-theme="dark"] .message-footer time,.dashboard[data-theme="dark"] .reply-preview,.dashboard[data-theme="dark"] .typing-indicator{color:#aaa79e}.dashboard[data-theme="dark"] .chat-composer input{background:#1e1f1b}.dashboard[data-theme="dark"] .share-button,.dashboard[data-theme="dark"] .send-button,.dashboard[data-theme="dark"] .mini-action{border-color:#55564e;color:var(--ink)}.dashboard[data-theme="dark"] .chat-message{background:#34352f}.dashboard[data-theme="dark"] .chat-message.message-mine{background:#633b2d}.dashboard[data-theme="dark"] .chat-message p,.dashboard[data-theme="dark"] .shared-track strong{color:#f1eee6}.dashboard[data-theme="dark"] .shared-track{background:#242520}.dashboard[data-theme="dark"] .shared-track span{color:#aaa79e}.dashboard[data-theme="dark"] .reaction-pill{background:#1f201d}
+.shared-track img{display:block;width:50px;height:50px;aspect-ratio:1;flex:0 0 50px;object-fit:cover}.shared-track small{overflow:hidden;color:#77766f;font-family:var(--mono);font-size:7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.dashboard[data-theme="dark"] .shared-track small{color:#aaa79e}.now-playing-art:has(img[src*="mzstatic.com"]){aspect-ratio:1}.unsend-button{padding:3px 5px;border:1px solid var(--line);background:transparent;color:#a64f3d;font-family:var(--mono);font-size:7px}.dashboard[data-theme="dark"] .unsend-button{color:#efaa91}
+.chat-layout{grid-template-columns:minmax(125px,205px) minmax(0,1fr)}.friends-panel,.chat-window,.chat-messages{min-width:0}.chat-message{width:fit-content;max-width:94%;min-width:0}.message-meta,.message-footer{width:100%;min-width:0;flex-wrap:wrap;align-items:flex-start}.message-actions{display:flex;flex:1 1 100%;flex-wrap:wrap;justify-content:flex-end;gap:3px;min-width:0;max-width:100%;margin-left:auto}.mini-action{display:grid;width:24px;height:24px;min-width:24px;flex:0 0 24px;place-items:center;padding:0}.unsend-button{flex:0 0 auto;white-space:nowrap}.mini-action.unsend-button{width:24px;height:24px;min-width:24px;flex:0 0 24px;padding:0;color:#a64f3d}.dashboard[data-theme="dark"] .mini-action.unsend-button{color:#efaa91}.reaction-row{min-width:0;flex-wrap:wrap}.reaction-pill{min-width:36px;justify-content:center}.shared-track,.shared-track>div{min-width:0}
+@media(max-width:1150px){.chat-layout{grid-template-columns:minmax(125px,165px) minmax(0,1fr)}.chat-messages{padding-right:10px;padding-left:10px}.chat-message{max-width:98%}}
+.mini-action.unsend-button{font-size:15px;line-height:1}
+.page-footer .logout-button{padding:0;border:0;background:transparent;color:var(--orange);font-family:var(--mono);font-size:9px;text-transform:uppercase;white-space:nowrap}.page-footer .logout-button:hover{color:var(--ink)}
+.profile-session-actions{display:flex;justify-content:flex-end;margin:0 0 10px}.profile-logout-button{padding:8px 10px;border:1px solid var(--line);background:transparent;color:#a64f3d;font-family:var(--mono);font-size:8px}.dashboard[data-theme="dark"] .profile-logout-button{color:#efaa91}
+.account-menu-anchor{position:relative;display:flex;align-items:center}.account-menu{position:absolute;z-index:12;display:grid;gap:2px;min-width:140px;padding:4px;border:1px solid var(--line);background:var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.15)}.account-menu-popover-sidebar{right:0;bottom:calc(100% + 7px)}.account-menu-popover-top{top:calc(100% + 7px);right:0}.account-menu button{width:100%;padding:9px 10px;border:0;background:transparent;color:var(--ink);text-align:left;font-family:var(--mono);font-size:8px;white-space:nowrap}.account-menu button:hover{background:#e8e4da}.dashboard[data-theme="dark"] .account-menu{background:#242520}.dashboard[data-theme="dark"] .account-menu button:hover{background:#30312b}
+.sidebar-bottom .account-menu-anchor>.more-button{display:grid;width:28px;height:28px;place-items:center;margin-left:auto}.account-menu-popover-sidebar{position:fixed;left:calc(var(--sidebar-width) - 158px);right:auto;bottom:60px;z-index:20}
+.chat-options{position:relative;margin-left:auto}.chat-options-menu{position:absolute;z-index:10;top:calc(100% + 6px);right:0;min-width:165px;padding:4px;border:1px solid var(--line);background:var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.12)}.chat-options-menu button{width:100%;padding:9px 10px;border:0;background:transparent;color:#a64f3d;text-align:left;font-family:var(--mono);font-size:8px;white-space:nowrap}.chat-options-menu button:hover{background:#f2e3d9}.dashboard[data-theme="dark"] .chat-options-menu{background:#242520}.chat-delete-modal{width:min(380px,100%)}.chat-delete-modal>p{margin:0 0 20px;color:#77766f;font-size:11px;line-height:1.5}.dashboard[data-theme="dark"] .chat-delete-modal>p{color:#aaa79e}.chat-delete-actions{display:flex;justify-content:flex-end;gap:8px}.chat-delete-actions button{padding:9px 11px;border:1px solid var(--line);background:transparent;font-family:var(--mono);font-size:8px}.chat-delete-actions button:last-child{border-color:var(--orange);background:var(--orange);color:#171714}.chat-empty-state{align-self:center;margin:auto;text-align:center}
+.chat-message{position:relative;touch-action:pan-y;transition:transform .14s ease-out,box-shadow .14s ease-out}.chat-message.message-swiping{transition:none;transform:translateX(var(--swipe-offset,0px))}.chat-message.swipe-reply-ready{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange)}
+.friend-info .friend-time{display:block;color:#89867e;font-family:var(--mono);font-size:7px;line-height:1;text-transform:uppercase}.dashboard[data-theme="dark"] .friend-info .friend-time{color:#aaa79e}
+.message-actions{position:absolute;z-index:6;right:0;bottom:calc(100% + 6px);display:flex;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;gap:3px;width:max-content;max-width:min(240px,calc(100vw - 32px));min-width:0;margin:0;padding:4px;border:1px solid var(--line);background:var(--paper);box-shadow:3px 3px 0 rgba(0,0,0,.12);animation:message-actions-pop .12s ease-out}.dashboard[data-theme="dark"] .message-actions{background:#242520}
+.chat-message.message-actions-open{z-index:6;transform:scale(1.025);transform-origin:center;box-shadow:0 2px 8px rgba(23,23,20,.16)}.chat-message .message-actions{position:static;z-index:auto;display:flex;flex:1 1 100%;flex-wrap:wrap;justify-content:flex-end;gap:3px;width:100%;max-width:100%;min-width:0;margin:4px 0;padding:0;border:0;background:transparent;box-shadow:none}
+@keyframes message-actions-pop{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 @keyframes record-spin{to{transform:translateY(-50%) rotate(360deg)}}@keyframes equalize{from{height:4px}to{height:20px}}@keyframes marquee{to{transform:translateX(-100%)}}@keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-@media(min-width:1500px){:root{--sidebar-width:245px;--rail-width:310px}.main-content{padding-left:45px;padding-right:45px}.right-rail{padding-left:22px;padding-right:22px}.cover-button{aspect-ratio:1.32}}
+@media(min-width:1500px){:root{--sidebar-width:245px;--rail-width:310px}.main-content{max-width:1400px;padding-left:45px;padding-right:45px}.right-rail{padding-left:22px;padding-right:22px}.cover-button{aspect-ratio:1.32}}
 @media(max-width:1150px){:root{--sidebar-width:195px;--rail-width:245px}.sidebar{padding-left:15px;padding-right:15px}.main-content{padding-left:25px;padding-right:25px}.right-rail{padding-left:14px;padding-right:14px}.welcome-screen{padding:0 4vw}.welcome-grid{gap:5%;}.welcome-copy h1{font-size:clamp(68px,10vw,120px)}.song-row{grid-template-columns:22px 34px minmax(110px,1.5fr) .8fr .8fr 32px 18px;gap:7px}}
 @media(max-width:900px){:root{--sidebar-width:178px;--rail-width:0px}.right-rail{display:none}.dashboard{padding-right:0}.main-content{max-width:850px;padding-left:32px;padding-right:32px}.welcome-grid{grid-template-columns:minmax(0,1.25fr) minmax(280px,.8fr);gap:4%}.welcome-copy h1{font-size:clamp(66px,9.5vw,110px)}.login-inner{padding:25px 24px}.track-grid{gap:11px}.track-card-meta h3{font-size:11px}.toast-message{right:24px}.room-layout{grid-template-columns:minmax(0,1.35fr) minmax(195px,.75fr)}}
 @media(max-width:680px){:root{--sidebar-width:0px}.welcome-screen{padding:0 19px 54px}.welcome-topline{height:65px}.welcome-topline .wordmark{font-size:35px}.welcome-topline .theme-toggle{padding:0 6px}.welcome-topline .theme-toggle small{display:none}.micro-label{display:none}.text-button{font-size:8px}.welcome-grid{display:flex;flex-direction:column;align-items:stretch;gap:28px;padding:45px 0 34px}.welcome-copy h1{font-size:clamp(73px,18vw,116px)}.welcome-copy .eyebrow{font-size:7px}.welcome-description{font-size:12px;margin:18px 0}.welcome-art{height:225px}.record{width:190px;right:26px}.art-caption b{font-size:18px}.login-panel{width:100%;max-width:440px;align-self:center}.login-inner{padding:23px 25px}.login-inner h2{font-size:53px}.welcome-footnote{font-size:7px}.welcome-footnote span:nth-child(2){display:none}.welcome-marquee{position:absolute;left:0;right:0;bottom:0;height:35px}.dashboard{padding:0 0 74px}.sidebar{display:none}.mobile-header{height:53px;position:sticky;z-index:7;top:0;display:flex;align-items:center;justify-content:space-between;padding:0 17px;border-bottom:1px solid #3a3a34;background:#1b1c19}.mobile-header .wordmark{font-size:32px}.mobile-avatar{width:29px;height:29px;border:0}.main-content{padding:0 17px 20px}.topbar{height:47px;gap:11px}.breadcrumb{font-size:7px}.breadcrumb>span,.breadcrumb>b{display:none}.search-box{width:auto;flex:1;height:29px}.search-box kbd{display:none}.theme-toggle{width:31px;height:29px;justify-content:center;padding:0}.theme-toggle small{display:none}.notification-button{width:24px}.top-avatar{display:none}.home-hero{padding:34px 0 21px}.home-hero h1,.page-heading h1{font-size:clamp(57px,14vw,86px)}.home-hero .eyebrow{font-size:7px;gap:6px}.hero-index{font-size:7px}.home-hero p,.page-heading p{font-size:10px}.describe-panel{margin-top:17px;padding:15px 13px 0}.describe-panel:after{right:8px;top:48px;font-size:32px}.describe-head h2{font-size:28px}.system-stamp{font-size:7px}.describe-panel textarea{min-height:90px;padding:9px;font-size:11px}.mood-strip{gap:5px}.mood-label{width:100%;margin-bottom:1px}.mood-strip>button{font-size:8px;padding:6px}.describe-bottom{margin:0 -13px;padding:9px 12px}.describe-bottom>span{max-width:100px;font-size:7px;line-height:1.4}.generate-button{min-width:158px;height:36px;font-size:8px}.identity-result{margin-top:25px;padding-bottom:17px}.identity-heading h2{font-size:29px}.match-note{max-width:120px;font-size:7px;text-align:right}.identity-body{grid-template-columns:1fr;gap:11px;margin-top:13px;padding:15px}.identity-name h3{font-size:39px}.identity-name p{max-width:100%}.genre-cloud{padding-top:1px}.identity-body .genre-tags{margin:11px 0 14px}.signal-bars{height:31px}.signal-bars i{width:3px}.content-section{margin-top:24px}.section-title-row h2{font-size:28px}.section-title-row>.inline-link{font-size:7px}.track-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 10px;margin-top:13px}.cover-button{aspect-ratio:1.1}.track-card-meta h3{font-size:10px}.track-card-meta p{font-size:8px}.track-card-foot{font-size:7px}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.library-card{aspect-ratio:.95}.library-card-info strong{font-size:20px}.library-card-info small{font-size:6px}.library-card:nth-child(3){display:none}.page-footer{flex-wrap:wrap;margin-top:25px;font-size:6px}.page-footer span:nth-child(2){display:none}.mobile-nav{position:fixed;z-index:8;left:0;right:0;bottom:0;height:61px;display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid #47473f;background:#1b1c19}.mobile-nav button{flex:1;height:100%;display:grid;align-content:center;justify-items:center;gap:4px;border:0;background:none;color:#98968d}.mobile-nav button>span{font-size:16px}.mobile-nav button small{font-family:var(--mono);font-size:7px}.mobile-nav button.active{color:var(--orange)}.page-heading{padding:28px 0 19px}.page-heading h1{margin:15px 0 8px}.discover-form{margin-top:15px}.discover-track-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.discover-track-grid .cover-button{aspect-ratio:1.08}.discover-genre-tags{gap:4px}.discover-genre-tags .genre-chip{padding:6px;font-size:7px}.artist-strip{grid-template-columns:1fr;margin-top:23px}.artist-strip-title{grid-row:auto;margin-bottom:8px}.artist-row{gap:8px}.artist-row span{font-size:6px}.library-page-heading>.switch-button{right:0;bottom:19px;width:125px;height:31px;padding:0 8px;font-size:7px}.library-full-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-card-static{aspect-ratio:.88}.library-tabs{gap:8px}.library-tabs button{font-size:7px}.song-row{grid-template-columns:23px 33px minmax(0,1fr) 23px;gap:7px;padding:6px 0}.song-row .song-genre,.song-row .song-mood,.song-row .song-duration{display:none}.song-name strong{font-size:9px}.song-name span{font-size:8px}.chat-layout{grid-template-columns:1fr;min-height:0}.friends-panel{display:flex;overflow:auto;gap:4px;padding:8px;border-right:0;border-bottom:1px solid #cbc7bc}.friends-heading{min-width:75px;align-items:center}.friends-heading .section-index{font-size:7px}.friend-row{width:auto;min-width:35px;padding:4px}.friend-info,.friend-presence{display:none}.chat-window{min-height:365px}.chat-messages{max-height:340px}.chat-window-head{height:50px}.room-layout{grid-template-columns:1fr}.room-main{padding:10px}.room-art{height:255px}.room-art-title h2{font-size:42px}.room-disc{width:65px;right:15px}.room-track-info h3{font-size:10px}.room-reactions{gap:1px}.room-reactions button{width:24px;height:25px;font-size:11px}.room-aside{border-top:1px solid #44453f;border-left:0;padding:13px}.listener-row{display:inline-flex;width:32%;vertical-align:top}.listener-row>div,.listener-wave{display:none}.listener-placeholder{padding-top:3px}.room-chat-message{display:inline-block;width:48%;vertical-align:top}.room-join{margin-top:7px}.profile-hero{margin:0 -17px}.profile-cover{height:140px}.profile-cover>span{left:17px;font-size:7px}.profile-details{flex-wrap:wrap;align-items:center;gap:9px;padding:0 0 12px}.profile-avatar{width:58px;height:58px;font-size:33px}.profile-title{min-width:calc(100% - 75px)}.profile-title h1{font-size:33px}.profile-title p{font-size:9px}.profile-title .section-index{font-size:7px}.profile-details>.switch-button{margin-left:67px;margin-top:-5px}.profile-grid{grid-template-columns:1fr;margin-top:16px}.profile-module{min-height:0;padding:13px}.profile-module h2{font-size:22px}.profile-tags .genre-chip{font-size:7px}.personality-bars{max-width:390px}.profile-library-row{max-width:350px}.offline-summary{margin-top:16px;padding:14px}.offline-header h2{font-size:36px}.offline-status{font-size:6px}.storage-numbers{font-size:6px}.offline-note{font-size:6px}.toast-message{right:12px;bottom:76px;left:12px;justify-content:center}.player-overlay{padding:16px}.expanded-player{padding:15px}.expanded-player>img{max-height:39vh}.expanded-track-info h2{font-size:28px}.close-expanded{right:14px;top:10px}.modal-backdrop{padding:14px}.create-modal{padding:22px}.create-modal h2{font-size:46px}}
