@@ -40,9 +40,57 @@ const showCreateAccount = ref(false)
 const spotifyConnected = ref(false)
 const email = ref('')
 const password = ref('')
+const loginError = ref('')
 const createAccountName = ref('')
 const createAccountEmail = ref('')
 const createAccountPassword = ref('')
+const accountRegistry = ref([])
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
+function getStoredAccounts() {
+  if (!import.meta.client) return []
+
+  try {
+    const saved = localStorage.getItem('synx-accounts')
+    const accounts = saved ? JSON.parse(saved) : []
+    return Array.isArray(accounts) ? accounts : []
+  } catch {
+    localStorage.removeItem('synx-accounts')
+    return []
+  }
+}
+
+function persistAccountRegistry() {
+  if (!import.meta.client) return
+  localStorage.setItem('synx-accounts', JSON.stringify(accountRegistry.value))
+}
+
+function findAccountByEmail(targetEmail) {
+  const normalizedEmail = normalizeEmail(targetEmail)
+  return accountRegistry.value.find((account) => normalizeEmail(account.email) === normalizedEmail)
+}
+
+function loginWithValidatedAccount(targetEmail, targetPassword = '') {
+  const account = findAccountByEmail(targetEmail)
+
+  if (!account) {
+    loginError.value = 'No account found for that email. Create an account first.'
+    notify('No account found for that email. Create an account first.')
+    return false
+  }
+
+  if (targetPassword && account.password && targetPassword !== account.password) {
+    loginError.value = 'That password does not match this account.'
+    notify('That password does not match this account.')
+    return false
+  }
+
+  loginError.value = ''
+  return true
+}
 const description = ref("I'm feeling nostalgic, energetic, and a little rebellious. I like late-night drives, old-school sounds, and music that feels cinematic.")
 const generated = ref(false)
 const selectedMoods = ref(['Nostalgic', 'Late night'])
@@ -128,7 +176,8 @@ const roomJoined = ref(false)
 const roomReaction = ref('')
 const showCreateLibrary = ref(false)
 const libraryName = ref('')
-const profileName = 'THE NIGHT EXPLORER'
+const profileName = ref('THE NIGHT EXPLORER')
+const profileHandle = computed(() => profileName.value.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'USER')
 const artistMatches = [
   { name: 'Beach House', genre: 'DREAM POP · 96% MATCH', cover: 'photo-1470225620780-dba8ba36b745', color: '#405c72' },
   { name: 'Men I Trust', genre: 'INDIE · 92% MATCH', cover: 'photo-1470252649378-9c29740c9fa8', color: '#6e795e' },
@@ -175,16 +224,45 @@ function notify(message) {
   toastTimer = setTimeout(() => { toast.value = '' }, 2400)
 }
 
-function enterApp(validateEmail = false) {
-  if (validateEmail && email.value && !email.value.includes('@')) {
+function enterApp(validateEmail = true) {
+  const trimmedEmail = email.value.trim()
+
+  if (!trimmedEmail) {
+    loginError.value = 'You need to log in first.'
+    notify('You need to log in first.')
+    return
+  }
+
+  if (validateEmail && !trimmedEmail.includes('@')) {
+    loginError.value = 'Add a valid email to continue'
     notify('Add a valid email to continue')
     return
   }
+
+  if (validateEmail) {
+    const trimmedPassword = password.value.trim()
+    if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
+      return
+    }
+
+    const matchedAccount = findAccountByEmail(trimmedEmail)
+    if (matchedAccount?.name) {
+      profileName.value = matchedAccount.name
+    }
+  }
+
+  const derivedName = trimmedEmail.split('@')[0].replace(/[._-]+/g, ' ').trim()
+  if (derivedName) {
+    profileName.value = derivedName
+  }
+
+  loginError.value = ''
   welcome.value = false
   notify('Your sound is ready.')
 }
 
 function openCreateAccount() {
+  loginError.value = ''
   showCreateAccount.value = true
   createAccountName.value = ''
   createAccountEmail.value = ''
@@ -197,17 +275,37 @@ function connectSpotify() {
 }
 
 function submitCreateAccount() {
-  if (!createAccountName.value.trim()) {
+  const name = createAccountName.value.trim()
+  const emailAddress = createAccountEmail.value.trim()
+  const passwordValue = createAccountPassword.value.trim()
+
+  if (!name) {
     notify('Add your name to create an account')
     return
   }
-  if (!createAccountEmail.value.includes('@')) {
+
+  if (!emailAddress.includes('@')) {
     notify('Use a valid email to continue')
     return
   }
 
-  email.value = createAccountEmail.value
-  password.value = createAccountPassword.value
+  if (findAccountByEmail(emailAddress)) {
+    loginError.value = 'An account with that email already exists. Log in instead.'
+    notify('An account with that email already exists. Log in instead.')
+    return
+  }
+
+  accountRegistry.value.push({
+    name,
+    email: emailAddress,
+    password: passwordValue,
+  })
+  persistAccountRegistry()
+
+  email.value = emailAddress
+  password.value = passwordValue
+  profileName.value = name || 'THE NIGHT EXPLORER'
+  loginError.value = ''
   showCreateAccount.value = false
   welcome.value = false
   notify('Account created. Your sound is ready.')
@@ -270,9 +368,10 @@ function toggleSaved(track) {
 function createLibrary() {
   const title = libraryName.value.trim()
   if (!title) return notify('Give your new archive a name')
-  libraries.value.unshift({ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true })
+  libraries.value = [{ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true }, ...libraries.value]
   libraryName.value = ''
   showCreateLibrary.value = false
+  activeView.value = 'library'
   notify('New archive created')
 }
 
@@ -509,6 +608,9 @@ function toggleVolume() {
 onMounted(() => {
   const savedTheme = localStorage.getItem('synx-theme')
   if (savedTheme === 'dark' || savedTheme === 'light') theme.value = savedTheme
+
+  accountRegistry.value = getStoredAccounts()
+
   const saved = localStorage.getItem('synx-state')
   if (!saved) return
   try {
@@ -595,6 +697,7 @@ watch(theme, (value) => {
               <input id="email" v-model="email" type="email" placeholder="you@somewhere.com" autocomplete="email" />
               <label for="password">PASSWORD <span class="optional">OPTIONAL FOR DEMO</span></label>
               <input id="password" v-model="password" type="password" placeholder="Anything works here" autocomplete="current-password" />
+              <p v-if="loginError" class="login-error">{{ loginError }}</p>
               <button class="switch-button switch-orange" type="submit">LOG IN <span>↗</span></button>
             </form>
             <button class="switch-button switch-light" @click="enterApp"><span class="google-g">G</span> CONTINUE WITH GOOGLE</button>
@@ -617,12 +720,12 @@ watch(theme, (value) => {
           </button>
         </nav>
         <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="showCreateLibrary = true">+</button></div>
-        <button v-for="library in libraries.slice(0, 3)" :key="library.id" class="side-library" @click="activeView = 'library'">
+        <button v-for="library in libraries" :key="library.id" class="side-library" @click="activeView = 'library'">
           <span class="side-library-mark" :style="{ backgroundColor: library.color }"></span>{{ library.title }}
         </button>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom">
-          <div class="avatar avatar-small">Z</div><div class="sidebar-user"><strong>zorok</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
+          <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
         </div>
       </aside>
 
@@ -679,7 +782,7 @@ watch(theme, (value) => {
           <section class="identity-result" :class="{ 'result-reveal': generated }">
             <div class="identity-heading"><div><span class="section-index">02 / THE READ</span><h2>YOUR CURRENT SOUND<span class="orange-period">.</span></h2></div><span class="match-note">{{ generated ? 'PROFILE UPDATED JUST NOW' : 'BASED ON YOUR LAST LISTEN' }}</span></div>
             <div class="identity-body">
-              <div class="identity-name"><span>YOU'RE SOUNDING LIKE</span><h3>{{ generated ? 'THE MIDNIGHT\nDREAMER' : profileName.replace('THE ', 'THE\n') }}</h3><p>Atmospheric sounds, emotional melodies, and music that feels like a scene you don't want to end.</p><button class="inline-link" @click="activeView = 'profile'">SEE YOUR FULL IDENTITY <span>↗</span></button></div>
+              <div class="identity-name"><span>YOU'RE SOUNDING LIKE</span><h3>{{ generated ? 'THE MIDNIGHT\nDREAMER' : profileName }}</h3><p>Atmospheric sounds, emotional melodies, and music that feels like a scene you don't want to end.</p><button class="inline-link" @click="activeView = 'profile'">SEE YOUR FULL IDENTITY <span>↗</span></button></div>
               <div class="genre-cloud"><span class="genre-label">YOUR FREQUENCY MAP</span><div class="genre-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">DREAM POP</span><span class="genre-chip chip-green">LATE NIGHT</span><span class="genre-chip chip-pink">ATMOSPHERIC</span><span class="genre-chip chip-yellow">INDIE</span></div><div class="signal-bars" aria-label="Strong match"><i v-for="n in 20" :key="n" :class="{ lit: n < 16 }" :style="{ height: `${9 + (n * 17 % 32)}px` }"></i></div><span class="signal-caption">SIGNAL STRENGTH <b>84.6%</b></span></div>
             </div>
           </section>
@@ -700,7 +803,7 @@ watch(theme, (value) => {
 
           <section class="content-section library-preview">
             <div class="section-title-row"><div><span class="section-index">04 / COLLECTED</span><h2>Your sound <em>archives.</em></h2></div><button class="inline-link" @click="activeView = 'library'">OPEN LIBRARY <span>↗</span></button></div>
-            <div class="library-grid"><FlipCard v-for="(library, index) in libraries.slice(0, 3)" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${library.count} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ library.count }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="activeView = 'library'">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
+            <div class="library-grid"><FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${library.count} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ library.count }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="activeView = 'library'">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
           </section>
         </template>
 
@@ -852,7 +955,7 @@ watch(theme, (value) => {
 
         <template v-else-if="activeView === 'profile'">
           <div class="profile-session-actions"><button type="button" class="profile-logout-button" @click="logout">LOG OUT ↗</button></div>
-          <section class="profile-hero"><div class="profile-cover"><img :src="imageUrl('photo-1519608487953-e999c86e7455', 1300)" alt="Twilight sky above a distant city" /><span>PERSONAL FREQUENCY ID // 0001</span></div><div class="profile-details"><div class="profile-avatar">Z<span>✳</span></div><div class="profile-title"><span class="section-index">@ZOROK <i class="live-dot"></i> FREQUENCY ACTIVE</span><h1>{{ profileName }}<span class="orange-period">.</span></h1><p>A collector of late-night feelings, long drives, and songs that stay after the credits.</p></div><button class="switch-button switch-dark" @click="notify('Identity card link copied')">↗ SHARE MY IDENTITY</button></div></section>
+          <section class="profile-hero"><div class="profile-cover"><img :src="imageUrl('photo-1519608487953-e999c86e7455', 1300)" alt="Twilight sky above a distant city" /><span>PERSONAL FREQUENCY ID // 0001</span></div><div class="profile-details"><div class="profile-avatar">{{ profileName.charAt(0).toUpperCase() || 'Z' }}<span>✳</span></div><div class="profile-title"><span class="section-index">@{{ profileHandle }} <i class="live-dot"></i> FREQUENCY ACTIVE</span><h1>{{ profileName }}<span class="orange-period">.</span></h1><p>A collector of late-night feelings, long drives, and songs that stay after the credits.</p></div><button class="switch-button switch-dark" @click="notify('Identity card link copied')">↗ SHARE MY IDENTITY</button></div></section>
           <section class="profile-grid">
             <FlipCard class="profile-flipper" eyebrow="01 / MY SOUND" title="Frequencies I return to" subtitle="YOUR SOUND PROFILE" description="Alternative · Indie · Electronic · Lo-Fi · Dream pop"><div class="profile-module"><span class="section-index">01 / MY SOUND</span><h2>THE FREQUENCIES<br>I RETURN TO.</h2><div class="genre-tags profile-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">INDIE</span><span class="genre-chip chip-green">ELECTRONIC</span><span class="genre-chip chip-pink">LO-FI</span><span class="genre-chip chip-yellow">DREAM POP</span></div></div></FlipCard>
             <FlipCard class="profile-flipper" eyebrow="02 / PERSONALITY IN WAVES" title="Your inner equalizer" subtitle="EMOTION 91 · NOSTALGIA 96" description="Energy 72 · Experiment 68 · Dance 43"><div class="profile-module"><span class="section-index">02 / PERSONALITY IN WAVES</span><h2>YOUR INNER<br>EQUALIZER.</h2><div class="personality-bars"><div v-for="(stat, index) in [{ name: 'ENERGY', value: 72 }, { name: 'EMOTION', value: 91 }, { name: 'EXPERIMENT', value: 68 }, { name: 'NOSTALGIA', value: 96 }, { name: 'DANCE', value: 43 }]" :key="stat.name"><span>{{ stat.name }}</span><i><b :style="{ width: `${stat.value}%`, backgroundColor: ['#f36b3e', '#70b9c6', '#78ad80', '#e58e9d', '#e8bf53'][index] }"></b></i><strong>{{ stat.value }}</strong></div></div></div></FlipCard>
@@ -862,7 +965,7 @@ watch(theme, (value) => {
         </template>
 
         <template v-else>
-          <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries.slice(0, 3)" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
+          <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
         <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">LOG OUT ↗</button></footer>
@@ -915,7 +1018,7 @@ watch(theme, (value) => {
 .toast-message{position:fixed;z-index:20;right:calc(var(--rail-width) + 26px);bottom:25px;display:flex;align-items:center;gap:9px;padding:12px 16px;border:1px solid #2c2d28;background:#20211e;color:var(--paper);font-size:11px;box-shadow:4px 4px 0 #f26a3d}.toast-message span{color:var(--orange)}.toast-enter-active,.toast-leave-active{transition:opacity .18s,transform .18s}.toast-enter-from,.toast-leave-to{opacity:0;transform:translateY(8px)}.modal-backdrop,.player-overlay{position:fixed;z-index:15;inset:0;display:grid;place-items:center;padding:20px;background:#151613c9;backdrop-filter:blur(5px)}.create-modal{width:min(430px,100%);position:relative;padding:28px;border:1px solid #aaa596;background:var(--paper);box-shadow:8px 8px 0 var(--orange)}.modal-close,.close-expanded{position:absolute;right:13px;top:10px;border:0;background:none;font-size:24px}.create-modal h2{margin:13px 0 23px;font-family:var(--display);font-size:54px;line-height:.8}.create-modal h2 em{color:var(--orange);font-style:normal}.create-modal label{color:#747169}.create-modal input{width:100%;border-color:#c2beb3;background:#e9e6de;color:var(--ink)}.create-modal .switch-button{width:100%}.player-overlay{z-index:14}.expanded-player{width:min(420px,100%);padding:23px;border:1px solid #5d5d53;background:var(--paper);box-shadow:8px 8px 0 var(--orange)}.expanded-player>img{display:block;width:100%;max-height:45vh;aspect-ratio:1;object-fit:cover;margin:14px 0}.expanded-track-info{display:flex;align-items:center;justify-content:space-between}.expanded-track-info h2{margin:0;font-family:var(--display);font-size:34px}.expanded-track-info p{margin:4px 0 10px;color:#77746d;font-size:10px}.expanded-controls{justify-content:space-around;margin:16px 0}.expanded-controls button{font-size:15px}.expanded-controls .mini-play{width:43px;height:43px}.expanded-actions{display:flex;gap:8px}.expanded-actions button{flex:1;padding:9px 3px;border:1px solid #c1bdb2;background:none;font-family:var(--mono);font-size:8px}.close-expanded{position:fixed;right:calc(50% - 230px);top:calc(50% - 330px);color:white;font-size:30px}.mobile-nav{display:none}
 
 .theme-toggle{height:30px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #c6c2b7;background:transparent;color:var(--ink)}.theme-toggle>span{font-size:15px}.theme-toggle small{font-family:var(--mono);font-size:8px}
-.welcome-screen[data-theme="light"]{background:var(--paper);color:var(--ink)}.welcome-screen[data-theme="light"] .wordmark{color:var(--ink)}.welcome-screen[data-theme="light"] .welcome-topline,.welcome-screen[data-theme="light"] .welcome-marquee{border-color:var(--line)}.welcome-screen[data-theme="light"] .micro-label,.welcome-screen[data-theme="light"] .welcome-footnote{color:#77766f}.welcome-screen[data-theme="light"] .text-button{color:var(--ink)}.welcome-screen[data-theme="light"] .welcome-description{color:#77766f}.welcome-screen[data-theme="light"] .welcome-description strong{color:var(--ink)}.welcome-screen[data-theme="light"] .login-panel{border-color:#aaa69b;background:#e8e5dc;box-shadow:8px 8px 0 #d3cfc3;color:var(--ink)}.welcome-screen[data-theme="light"] .panel-top,.welcome-screen[data-theme="light"] .panel-bottom{border-color:#cbc7bc;color:#77766f}.welcome-screen[data-theme="light"] .login-intro{color:#77766f}.welcome-screen[data-theme="light"] .login-inner label{color:#77766f}.welcome-screen[data-theme="light"] .login-inner input{border-color:#c4c0b5;background:#f1eee6;color:var(--ink)}.welcome-screen[data-theme="light"] .login-inner input::placeholder{color:#858178}.welcome-screen[data-theme="light"] .create-account{color:#77766f}.welcome-screen[data-theme="light"] .forgot{color:#77766f}.create-account-panel .login-intro{margin-bottom:16px}.create-account-panel form{gap:10px}.create-account-panel .switch-button{margin-top:2px}.create-account-panel .create-account{margin-top:14px}.spotify-connect{letter-spacing:.08em}.spotify-mark{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#1db954;color:#0b0f0d;font-size:12px;font-weight:700;line-height:1}.back-to-login{margin-top:14px}.welcome-screen[data-theme="dark"] .theme-toggle{border-color:#5a5b53;color:var(--paper)}
+.welcome-screen[data-theme="light"]{background:var(--paper);color:var(--ink)}.welcome-screen[data-theme="light"] .wordmark{color:var(--ink)}.welcome-screen[data-theme="light"] .welcome-topline,.welcome-screen[data-theme="light"] .welcome-marquee{border-color:var(--line)}.welcome-screen[data-theme="light"] .micro-label,.welcome-screen[data-theme="light"] .welcome-footnote{color:#77766f}.welcome-screen[data-theme="light"] .text-button{color:var(--ink)}.welcome-screen[data-theme="light"] .welcome-description{color:#77766f}.welcome-screen[data-theme="light"] .welcome-description strong{color:var(--ink)}.welcome-screen[data-theme="light"] .login-panel{border-color:#aaa69b;background:#e8e5dc;box-shadow:8px 8px 0 #d3cfc3;color:var(--ink)}.welcome-screen[data-theme="light"] .panel-top,.welcome-screen[data-theme="light"] .panel-bottom{border-color:#cbc7bc;color:#77766f}.welcome-screen[data-theme="light"] .login-intro{color:#77766f}.welcome-screen[data-theme="light"] .login-inner label{color:#77766f}.welcome-screen[data-theme="light"] .login-inner input{border-color:#c4c0b5;background:#f1eee6;color:var(--ink)}.welcome-screen[data-theme="light"] .login-inner input::placeholder{color:#858178}.welcome-screen[data-theme="light"] .create-account{color:#77766f}.welcome-screen[data-theme="light"] .forgot{color:#77766f}.login-error{margin:0 0 12px;color:#f26a3d;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase}.welcome-screen[data-theme="light"] .login-error{color:#d75a2c}.create-account-panel .login-intro{margin-bottom:16px}.create-account-panel form{gap:10px}.create-account-panel .switch-button{margin-top:2px}.create-account-panel .create-account{margin-top:14px}.spotify-connect{letter-spacing:.08em}.spotify-mark{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#1db954;color:#0b0f0d;font-size:12px;font-weight:700;line-height:1}.back-to-login{margin-top:14px}.welcome-screen[data-theme="dark"] .theme-toggle{border-color:#5a5b53;color:var(--paper)}
 .dashboard[data-theme="dark"]{--ink:#f1eee6;--line:#46473f;background-color:#1c1d1a;background-image:radial-gradient(#ded5be12 .65px,transparent .65px);color:var(--ink)}
 .dashboard[data-theme="dark"] .topbar,.dashboard[data-theme="dark"] .page-footer,.dashboard[data-theme="dark"] .identity-result,.dashboard[data-theme="dark"] .track-card-foot,.dashboard[data-theme="dark"] .song-row{border-color:var(--line)}
 .dashboard[data-theme="dark"] .home-hero p,.dashboard[data-theme="dark"] .page-heading p,.dashboard[data-theme="dark"] .section-index,.dashboard[data-theme="dark"] .match-note,.dashboard[data-theme="dark"] .system-stamp,.dashboard[data-theme="dark"] .mood-label,.dashboard[data-theme="dark"] .describe-bottom>span,.dashboard[data-theme="dark"] .track-card-meta p,.dashboard[data-theme="dark"] .track-card-foot,.dashboard[data-theme="dark"] .song-name span,.dashboard[data-theme="dark"] .song-genre,.dashboard[data-theme="dark"] .song-mood,.dashboard[data-theme="dark"] .song-duration,.dashboard[data-theme="dark"] .breadcrumb,.dashboard[data-theme="dark"] .rail-title,.dashboard[data-theme="dark"] .rail-section-label,.dashboard[data-theme="dark"] .rail-subhead,.dashboard[data-theme="dark"] .rail-friend small,.dashboard[data-theme="dark"] .now-playing-meta span,.dashboard[data-theme="dark"] .player-times,.dashboard[data-theme="dark"] .rail-quote p,.dashboard[data-theme="dark"] .rail-quote small,.dashboard[data-theme="dark"] .identity-name p,.dashboard[data-theme="dark"] .genre-label,.dashboard[data-theme="dark"] .signal-caption,.dashboard[data-theme="dark"] .profile-title p,.dashboard[data-theme="dark"] .personality-bars>div>span,.dashboard[data-theme="dark"] .personality-bars>div>strong,.dashboard[data-theme="dark"] .profile-library-row div span,.dashboard[data-theme="dark"] .offline-status,.dashboard[data-theme="dark"] .storage-numbers,.dashboard[data-theme="dark"] .offline-row div span,.dashboard[data-theme="dark"] .offline-note,.dashboard[data-theme="dark"] .expanded-track-info p{color:#aaa79e}
