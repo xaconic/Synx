@@ -1,10 +1,15 @@
 <script setup>
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { expectedLocalAudioPath, localAudioFileForSong } from '#shared/song-audio'
 =======
 import { computed, onMounted, ref, watch } from 'vue'
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { expectedLocalAudioPath, localAudioFileForSong } from '#shared/song-audio'
+>>>>>>> 41b7cfc (Update SYNX music website)
 import FlipCard from '~/components/FlipCard.vue'
 import BorderGlow from '~/components/BorderGlow.vue'
 import Iridescence from '~/components/Iridescence.vue'
@@ -12,9 +17,13 @@ import OptionWheel from '~/components/OptionWheel.vue'
 import WakeSlider from '~/components/WakeSlider.vue'
 import FuzzyText from '~/components/FuzzyText.vue'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import LocalAudioChip from '~/components/LocalAudioChip.vue'
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+import LocalAudioChip from '~/components/LocalAudioChip.vue'
+>>>>>>> 41b7cfc (Update SYNX music website)
 
 const navigation = [
   { id: 'home', label: 'Home', icon: '⌂' },
@@ -26,6 +35,9 @@ const navigation = [
 ]
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 // IDs are configured from official or authorized uploads. The embed API remains
 // authoritative: unavailable/private or embedding-disabled videos are rejected at runtime.
 //
@@ -60,6 +72,7 @@ const libraries = ref([
   { id: 1, title: 'Midnight drive', subtitle: 'NO DESTINATION REQUIRED', count: 4, trackIds: [1, 3, 4, 8], mood: 'DREAMY / ALTERNATIVE', cover: 'photo-1519608487953-e999c86e7455', color: '#9e523d', saved: true },
   { id: 2, title: 'Soft focus', subtitle: 'A LITTLE ROOM TO THINK', count: 3, trackIds: [3, 6, 7], mood: 'CALM / ATMOSPHERIC', cover: 'photo-1470252649378-9c29740c9fa8', color: '#637b5d', saved: true },
   { id: 3, title: 'After hours', subtitle: 'THE CITY IS STILL AWAKE', count: 2, trackIds: [2, 4], mood: 'DARK / ELECTRONIC', cover: 'photo-1470225620780-dba8ba36b745', color: '#394f73', saved: true },
+<<<<<<< HEAD
 =======
 const tracks = [
   { id: 1, title: 'The Night We Met', artist: 'Lord Huron', genre: 'Indie folk', mood: 'Nostalgic', duration: '3:28', cover: 'photo-1519608487953-e999c86e7455', color: '#b65f37', tags: ['night', 'nostalgic', 'cinematic', 'dreamy', 'calm', 'indie', 'late'] },
@@ -77,12 +90,15 @@ const libraries = ref([
   { id: 2, title: 'Soft focus', subtitle: 'A LITTLE ROOM TO THINK', count: 18, mood: 'CALM / ATMOSPHERIC', cover: 'photo-1470252649378-9c29740c9fa8', color: '#637b5d', saved: true },
   { id: 3, title: 'After hours', subtitle: 'THE CITY IS STILL AWAKE', count: 32, mood: 'DARK / ELECTRONIC', cover: 'photo-1470225620780-dba8ba36b745', color: '#394f73', saved: true },
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 ])
 
 const activeView = ref('home')
 const theme = ref('light')
 const welcome = ref(true)
 const showCreateAccount = ref(false)
+<<<<<<< HEAD
 <<<<<<< HEAD
 const spotifyConnected = ref(false)
 const email = ref('')
@@ -96,6 +112,11 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+const spotifyConnected = ref(false)
+const email = ref('')
+const password = ref('')
+>>>>>>> 41b7cfc (Update SYNX music website)
 const loginError = ref('')
 const createAccountName = ref('')
 const createAccountEmail = ref('')
@@ -139,10 +160,14 @@ function loginWithValidatedAccount(targetEmail, targetPassword = '') {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   if (targetPassword && account.password && targetPassword !== account.password) {
 =======
   if (account.password && targetPassword !== account.password) {
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+  if (targetPassword && account.password && targetPassword !== account.password) {
+>>>>>>> 41b7cfc (Update SYNX music website)
     loginError.value = 'That password does not match this account.'
     notify('That password does not match this account.')
     return false
@@ -154,6 +179,9 @@ function loginWithValidatedAccount(targetEmail, targetPassword = '') {
 const description = ref("I'm feeling nostalgic, energetic, and a little rebellious. I like late-night drives, old-school sounds, and music that feels cinematic.")
 const generated = ref(false)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const moodOptions = ['Nostalgic', 'Late night', 'Restless', 'Soft focus', 'Rebellious', 'Cinematic']
 const selectedMoods = ref(['Nostalgic', 'Late night'])
 const discoveryPreferences = ref({
@@ -165,9 +193,12 @@ const isGenerating = ref(false)
 const recommendationError = ref('')
 const recommendationFilterType = ref('All')
 const recommendationFilter = ref('All')
+<<<<<<< HEAD
 =======
 const selectedMoods = ref(['Nostalgic', 'Late night'])
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const soundStyles = ['Ambient', 'House', 'Techno', 'Jazz', 'Lo-Fi', 'Synthwave']
 const selectedStyle = ref(soundStyles[2])
 const search = ref('')
@@ -179,6 +210,9 @@ const selectedSpotifyTrack = ref(null)
 const selectedFilter = ref('All')
 const libraryTab = ref('All')
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const selectedLibraryId = ref(null)
 const savedTracks = ref([1, 3, 6])
 const currentTrack = ref(tracks[2])
@@ -214,21 +248,43 @@ let youtubeApiPromise = null
 let youtubeProgressTimer = null
 let pendingYouTubeVideoId = ''
 let youtubeEmbedFailed = false
+<<<<<<< HEAD
 =======
 const savedTracks = ref([1, 3, 6])
 const currentTrack = ref(tracks[2])
 const isPlaying = ref(false)
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const volume = ref(50)
 const previousVolume = ref(50)
 const isExpanded = ref(false)
 const toast = ref('')
 const newMessage = ref('')
+<<<<<<< HEAD
+=======
+const chatLoading = ref(false)
+const chatError = ref('')
+const sendingMessage = ref(false)
+const deletingMessage = ref(false)
+const unsendTargetId = ref(null)
+const highlightedMessageId = ref('')
+const activeChatStorageKey = ref('')
+const chatMessageContainer = ref(null)
+>>>>>>> 41b7cfc (Update SYNX music website)
 const reactionOptions = ['❤️', '🔥', '🎵', '😂', '👀']
 const replyTarget = ref(null)
 const messageSwipe = ref(null)
 const activeMessageActionsId = ref(null)
 let messagePressTimer
+<<<<<<< HEAD
+=======
+let chatHighlightTimer
+let chatPollTimer
+let chatSyncChannel
+let lastChatSnapshot = ''
+let chatStorageListener
+>>>>>>> 41b7cfc (Update SYNX music website)
 const showChatOptions = ref(false)
 const showDeleteConfirm = ref(false)
 const accountMenu = ref('')
@@ -241,6 +297,9 @@ const chatFriends = [
 ]
 const activeFriend = ref(0)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 // Chat-shared songs. youtubeVideoId values are official uploads verified as embeddable on 2026-10-23.
 // Local audioUrl values are derived from the shared manifest (this also corrects the old
 // '/music/ilybs.mp3' typo for ILYSB — the expected file is '/music/ilysb.mp3').
@@ -260,6 +319,7 @@ const chatSongs = Object.fromEntries(
   Object.entries(rawChatSongs).map(([key, song]) => [key, withLocalAudioSource(song)]),
 )
 
+<<<<<<< HEAD
 =======
 const chatSongs = {
   ilysb: { id: 'chat-lany-ilysb', title: 'ILYSB', artist: 'LANY', album: 'Make Out - EP', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/74/23/52/74235205-45aa-e94a-c1a6-cfd2fa495726/00602557074499.rgb.jpg/600x600bb.jpg', duration: '3:31' },
@@ -273,6 +333,8 @@ const chatSongs = {
   treasure: { id: 'chat-bruno-treasure', title: 'Treasure', artist: 'Bruno Mars', album: 'Unorthodox Jukebox', albumArtwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/15/63/53/156353b8-d45b-a17d-f553-2d125aeb3cb3/075679957474.jpg/600x600bb.jpg', duration: '2:58' },
 }
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const conversations = ref({
   '@dreizamora': [
     { id: 'drei-1', from: 'Drei Zamora', text: 'ILYSB is still the perfect late-night drive song.', track: chatSongs.ilysb, reactions: { '❤️': ['Drei Zamora'], '🎵': ['You'] }, replyTo: null, timestamp: '10:42 PM' },
@@ -300,17 +362,201 @@ const conversations = ref({
     { id: 'john-3', from: 'John Mico', text: 'Recognize by PARTYNEXTDOOR. Smooth landing.', track: chatSongs.recognize, reactions: {}, replyTo: null, timestamp: 'Monday' },
   ],
 })
+<<<<<<< HEAD
 const messages = computed(() => conversations.value[chatFriends[activeFriend.value].handle])
 const chatTypingText = computed(() => chatFriends[activeFriend.value].active ? `${chatFriends[activeFriend.value].name} is typing...` : '')
+=======
+const starterConversations = JSON.parse(JSON.stringify(conversations.value))
+const messages = computed(() => conversations.value[chatFriends[activeFriend.value].handle] || [])
+const chatTypingText = computed(() => chatFriends[activeFriend.value].active ? `${chatFriends[activeFriend.value].name} is typing...` : '')
+
+function currentChatIdentity() {
+  return normalizeEmail(email.value) || 'guest'
+}
+
+function chatStorageKey() {
+  return `synx-chat-history:v1:${currentChatIdentity()}`
+}
+
+function parseChatSnapshot(serialized) {
+  const parsed = JSON.parse(serialized)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Saved chat history has an invalid format.')
+  }
+
+  const normalized = {}
+  for (const friend of chatFriends) {
+    const thread = parsed[friend.handle]
+    if (!Array.isArray(thread)) {
+      normalized[friend.handle] = []
+      continue
+    }
+    normalized[friend.handle] = thread
+      .filter((message) => message && typeof message === 'object' && typeof message.id === 'string' && !message.unsent)
+      .map((message) => ({
+        ...message,
+        replyToMessageId: message.replyToMessageId || message.replyTo?.id || null,
+      }))
+  }
+
+  const messageIds = new Set(Object.values(normalized).flat().map((message) => message.id))
+  for (const thread of Object.values(normalized)) {
+    for (const message of thread) {
+      if (!message.replyToMessageId || !messageIds.has(message.replyToMessageId)) {
+        message.replyToMessageId = null
+        message.replyToConversationHandle = null
+        message.replyTo = null
+      }
+    }
+  }
+  return normalized
+}
+
+function replaceChatSnapshot(serialized) {
+  try {
+    const snapshot = parseChatSnapshot(serialized)
+    const messageIds = new Set(Object.values(snapshot).flat().map((message) => message.id))
+    conversations.value = snapshot
+    lastChatSnapshot = serialized
+    chatError.value = ''
+    if (replyTarget.value && !messageIds.has(replyTarget.value.id)) replyTarget.value = null
+    if (unsendTargetId.value && !messageIds.has(unsendTargetId.value)) unsendTargetId.value = null
+    if (activeMessageActionsId.value && !messageIds.has(activeMessageActionsId.value)) activeMessageActionsId.value = null
+    if (highlightedMessageId.value && !messageIds.has(highlightedMessageId.value)) highlightedMessageId.value = ''
+  } catch (error) {
+    chatError.value = error instanceof Error ? error.message : 'Could not read saved chat history.'
+  }
+}
+
+function initializeChatHistory() {
+  chatLoading.value = true
+  chatError.value = ''
+  activeChatStorageKey.value = chatStorageKey()
+  conversations.value = JSON.parse(JSON.stringify(starterConversations))
+  lastChatSnapshot = ''
+
+  try {
+    const saved = localStorage.getItem(activeChatStorageKey.value)
+    if (saved) replaceChatSnapshot(saved)
+    else {
+      conversations.value = JSON.parse(JSON.stringify(starterConversations))
+      lastChatSnapshot = ''
+    }
+  } catch (error) {
+    chatError.value = error instanceof Error
+      ? `Chat history could not be loaded: ${error.message}`
+      : 'Chat history could not be loaded.'
+  } finally {
+    chatLoading.value = false
+  }
+
+  clearInterval(chatPollTimer)
+  chatPollTimer = setInterval(() => {
+    if (!activeChatStorageKey.value) return
+    try {
+      const saved = localStorage.getItem(activeChatStorageKey.value)
+      if (saved && saved !== lastChatSnapshot) replaceChatSnapshot(saved)
+    } catch (error) {
+      chatError.value = error instanceof Error
+        ? `Chat history could not be synchronized: ${error.message}`
+        : 'Chat history could not be synchronized.'
+    }
+  }, 2000)
+}
+
+function persistChatHistory() {
+  if (!import.meta.client || !activeChatStorageKey.value) return false
+
+  try {
+    const serialized = JSON.stringify(conversations.value)
+    localStorage.setItem(activeChatStorageKey.value, serialized)
+    lastChatSnapshot = serialized
+    chatError.value = ''
+    try {
+      chatSyncChannel?.postMessage({ key: activeChatStorageKey.value, snapshot: serialized })
+    } catch (error) {
+      chatError.value = error instanceof Error
+        ? `Messages were saved, but live tab synchronization failed: ${error.message}`
+        : 'Messages were saved, but live tab synchronization failed.'
+    }
+    return true
+  } catch (error) {
+    chatError.value = error instanceof Error
+      ? `Message changes could not be saved: ${error.message}`
+      : 'Message changes could not be saved.'
+    return false
+  }
+}
+
+function applyIncomingChatSnapshot(key, serialized) {
+  if (key !== activeChatStorageKey.value || typeof serialized !== 'string' || serialized === lastChatSnapshot) return
+  replaceChatSnapshot(serialized)
+}
+
+function messageTimestamp() {
+  return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+}
+
+function createChatMessageId() {
+  return globalThis.crypto?.randomUUID?.() || `message-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function isOwnMessage(message) {
+  return message.senderId
+    ? message.senderId === currentChatIdentity()
+    : message.from === 'You'
+}
+
+function replyPreview(message) {
+  const handle = message.replyToConversationHandle || chatFriends[activeFriend.value].handle
+  const original = message.replyToMessageId
+    ? (conversations.value[handle] || []).find((item) => item.id === message.replyToMessageId)
+    : null
+
+  if (original) {
+    return { id: original.id, from: original.from, text: original.text || 'Shared a track', unavailable: false }
+  }
+  return { id: '', from: '', text: '', unavailable: true }
+}
+
+function excerpt(text) {
+  const value = String(text || '').replace(/\s+/g, ' ').trim()
+  return value.length > 120 ? `${value.slice(0, 117)}…` : value
+}
+
+function toggleMessageActions(message) {
+  activeMessageActionsId.value = activeMessageActionsId.value === message.id ? null : message.id
+}
+
+async function scrollChatToLatest() {
+  await nextTick()
+  if (chatMessageContainer.value) {
+    chatMessageContainer.value.scrollTop = chatMessageContainer.value.scrollHeight
+  }
+}
+
+watch([activeView, activeFriend], ([view]) => {
+  if (view === 'chat') scrollChatToLatest()
+})
+
+watch(() => messages.value.length, () => {
+  if (activeView.value === 'chat') scrollChatToLatest()
+})
+>>>>>>> 41b7cfc (Update SYNX music website)
 function latestMessageTime(handle) {
   const thread = conversations.value[handle] || []
   return thread.at(-1)?.timestamp || 'NO MESSAGES'
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 const roomJoined = ref(false)
 const roomReaction = ref('')
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+const roomJoined = ref(false)
+const roomReaction = ref('')
+>>>>>>> 41b7cfc (Update SYNX music website)
 const showCreateLibrary = ref(false)
 const libraryName = ref('')
 const profileName = ref('THE NIGHT EXPLORER')
@@ -343,6 +589,9 @@ const libraryTracks = computed(() => libraryTab.value === 'Songs'
   : filteredTracks.value.filter((track) => savedTracks.value.includes(track.id)))
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const selectedLibrary = computed(() => libraries.value.find((library) => library.id === selectedLibraryId.value) || null)
 const selectedLibraryTracks = computed(() => archiveTracks(selectedLibrary.value))
 const upcomingTracks = computed(() => {
@@ -477,6 +726,7 @@ const recommendedLibraries = computed(() => libraries.value
   })
   .filter((item) => item.members.length && (item.matchingMembers.length || item.metadataMatches)))
 
+<<<<<<< HEAD
 =======
 const recommendedTracks = computed(() => {
   if (!generated.value && activeView.value !== 'discover') return [tracks[2], tracks[5], tracks[0], tracks[3]]
@@ -489,6 +739,8 @@ const recommendedTracks = computed(() => {
 })
 
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 const imageUrl = (photo, width = 640) => photo?.startsWith('https://') ? photo : `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=${width}&q=85`
 
 let toastTimer
@@ -499,10 +751,14 @@ function notify(message) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 function enterApp(validateEmail = true) {
 =======
 function enterApp() {
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+function enterApp(validateEmail = true) {
+>>>>>>> 41b7cfc (Update SYNX music website)
   const trimmedEmail = email.value.trim()
 
   if (!trimmedEmail) {
@@ -512,16 +768,23 @@ function enterApp() {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   if (validateEmail && !trimmedEmail.includes('@')) {
 =======
   if (!trimmedEmail.includes('@')) {
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+  if (validateEmail && !trimmedEmail.includes('@')) {
+>>>>>>> 41b7cfc (Update SYNX music website)
     loginError.value = 'Add a valid email to continue'
     notify('Add a valid email to continue')
     return
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   if (validateEmail) {
     const trimmedPassword = password.value.trim()
     if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
@@ -538,6 +801,7 @@ function enterApp() {
   if (derivedName) {
     profileName.value = derivedName
   }
+<<<<<<< HEAD
 =======
   const trimmedPassword = password.value.trim()
   if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
@@ -550,11 +814,16 @@ function enterApp() {
   showAccountPrompt.value = false
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
 
+=======
+
+  initializeChatHistory()
+>>>>>>> 41b7cfc (Update SYNX music website)
   loginError.value = ''
   welcome.value = false
   notify('Your sound is ready.')
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 function enterAsGuest() {
@@ -607,6 +876,8 @@ const accountPromptDescription = computed(() => accountPromptReason.value === 'c
       : 'Sign in to save tracks and build a personal archive that stays with your account.')
 
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 function openCreateAccount() {
   loginError.value = ''
   showCreateAccount.value = true
@@ -652,10 +923,14 @@ function submitCreateAccount() {
   password.value = passwordValue
   profileName.value = name || 'THE NIGHT EXPLORER'
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   isGuest.value = false
   showAccountPrompt.value = false
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+  initializeChatHistory()
+>>>>>>> 41b7cfc (Update SYNX music website)
   loginError.value = ''
   showCreateAccount.value = false
   welcome.value = false
@@ -666,10 +941,13 @@ function logout() {
   clearTimeout(toastTimer)
   welcome.value = true
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   isGuest.value = false
   showAccountPrompt.value = false
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   activeView.value = 'home'
   email.value = ''
   password.value = ''
@@ -681,6 +959,11 @@ function logout() {
   isExpanded.value = false
   isPlaying.value = false
   toast.value = ''
+<<<<<<< HEAD
+=======
+  activeChatStorageKey.value = ''
+  clearInterval(chatPollTimer)
+>>>>>>> 41b7cfc (Update SYNX music website)
 }
 
 function toggleAccountMenu(location) {
@@ -693,6 +976,9 @@ function openProfile() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 async function generateSound() {
   if (isGenerating.value) return
   const submittedDescription = description.value.trim()
@@ -727,6 +1013,7 @@ async function generateSound() {
   } finally {
     isGenerating.value = false
   }
+<<<<<<< HEAD
 =======
 function generateSound() {
   if (!description.value.trim()) {
@@ -737,6 +1024,8 @@ function generateSound() {
   activeView.value = 'discover'
   notify('Your sound profile is ready.')
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 }
 
 function selectSoundStyle(_index, item) {
@@ -744,6 +1033,9 @@ function selectSoundStyle(_index, item) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 function formatTime(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
@@ -1306,6 +1598,7 @@ function onAudioError() {
 }
 
 function toggleSaved(track) {
+<<<<<<< HEAD
 =======
 function playTrack(track) {
   if (currentTrack.value?.id === track.id) isPlaying.value = !isPlaying.value
@@ -1318,6 +1611,8 @@ function playTrack(track) {
 function toggleSaved(track) {
   if (!requireAccount('save_music')) return
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   savedTracks.value = savedTracks.value.includes(track.id)
     ? savedTracks.value.filter((id) => id !== track.id)
     : [...savedTracks.value, track.id]
@@ -1325,10 +1620,14 @@ function toggleSaved(track) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 function createLibrary() {
   const title = libraryName.value.trim()
   if (!title) return notify('Give your new archive a name')
   libraries.value = [{ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, trackIds: [], mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true }, ...libraries.value]
+<<<<<<< HEAD
 =======
 function openCreateLibrary() {
   if (!requireAccount('save_music')) return
@@ -1341,6 +1640,8 @@ function createLibrary() {
   if (!title) return notify('Give your new archive a name')
   libraries.value = [{ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true }, ...libraries.value]
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   libraryName.value = ''
   showCreateLibrary.value = false
   activeView.value = 'library'
@@ -1348,6 +1649,9 @@ function createLibrary() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 function openArchive(library) {
   selectedLibraryId.value = library.id
   libraryTab.value = 'Archive'
@@ -1376,14 +1680,21 @@ function playArchive(library) {
   playTrack(queue[0], queue)
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 function setReplyTarget(message) {
   clearTimeout(messagePressTimer)
   messageSwipe.value = null
   activeMessageActionsId.value = null
   replyTarget.value = {
     id: message.id,
+<<<<<<< HEAD
+=======
+    conversationHandle: chatFriends[activeFriend.value].handle,
+>>>>>>> 41b7cfc (Update SYNX music website)
     from: message.from,
     text: message.text,
     track: message.track || null,
@@ -1477,6 +1788,10 @@ function selectChat(index) {
   newMessage.value = ''
   activeMessageActionsId.value = null
   showChatOptions.value = false
+<<<<<<< HEAD
+=======
+  highlightedMessageId.value = ''
+>>>>>>> 41b7cfc (Update SYNX music website)
 }
 
 function requestDeleteConversation() {
@@ -1485,7 +1800,17 @@ function requestDeleteConversation() {
 }
 
 function deleteConversation() {
+<<<<<<< HEAD
   conversations.value[chatFriends[activeFriend.value].handle] = []
+=======
+  const handle = chatFriends[activeFriend.value].handle
+  const previousMessages = conversations.value[handle]
+  conversations.value[handle] = []
+  if (!persistChatHistory()) {
+    conversations.value[handle] = previousMessages
+    return
+  }
+>>>>>>> 41b7cfc (Update SYNX music website)
   replyTarget.value = null
   activeMessageActionsId.value = null
   newMessage.value = ''
@@ -1497,6 +1822,10 @@ function toggleReaction(messageId, emoji) {
   const message = messages.value.find((item) => item.id === messageId)
   if (!message) return
 
+<<<<<<< HEAD
+=======
+  const previousReactions = JSON.parse(JSON.stringify(message.reactions || {}))
+>>>>>>> 41b7cfc (Update SYNX music website)
   const reactions = message.reactions || {}
   const users = reactions[emoji] || []
 
@@ -1508,6 +1837,7 @@ function toggleReaction(messageId, emoji) {
   }
 
   message.reactions = reactions
+<<<<<<< HEAD
   closeMessageActions()
 }
 
@@ -1518,6 +1848,63 @@ function unsendMessage(messageId) {
   messages.value.splice(messageIndex, 1)
   if (replyTarget.value?.id === messageId) replyTarget.value = null
   closeMessageActions()
+=======
+  if (!persistChatHistory()) message.reactions = previousReactions
+  closeMessageActions()
+}
+
+function requestUnsendMessage(messageId) {
+  const message = messages.value.find((item) => item.id === messageId)
+  if (!message || !isOwnMessage(message) || deletingMessage.value) return
+  unsendTargetId.value = messageId
+  closeMessageActions()
+}
+
+function cancelUnsendMessage() {
+  unsendTargetId.value = null
+}
+
+function confirmUnsendMessage() {
+  if (deletingMessage.value) return
+  const message = messages.value.find((item) => item.id === unsendTargetId.value)
+  if (!message || !isOwnMessage(message)) {
+    unsendTargetId.value = null
+    return
+  }
+
+  deletingMessage.value = true
+  const messageId = message.id
+  const previousConversations = conversations.value
+  const nextConversations = JSON.parse(JSON.stringify(previousConversations))
+
+  for (const thread of Object.values(nextConversations)) {
+    for (const item of thread) {
+      if (item.replyToMessageId === messageId || item.replyTo?.id === messageId) {
+        item.replyToMessageId = null
+        item.replyToConversationHandle = null
+        item.replyTo = null
+      }
+    }
+  }
+
+  for (const handle of Object.keys(nextConversations)) {
+    nextConversations[handle] = nextConversations[handle].filter((item) => item.id !== messageId)
+  }
+
+  conversations.value = nextConversations
+  if (!persistChatHistory()) {
+    conversations.value = previousConversations
+    notify(chatError.value || 'Message could not be deleted. Try again.')
+    deletingMessage.value = false
+    return
+  }
+
+  if (replyTarget.value?.id === messageId) replyTarget.value = null
+  if (activeMessageActionsId.value === messageId) activeMessageActionsId.value = null
+  if (highlightedMessageId.value === messageId) highlightedMessageId.value = ''
+  unsendTargetId.value = null
+  deletingMessage.value = false
+>>>>>>> 41b7cfc (Update SYNX music website)
   notify('Message unsent')
 }
 
@@ -1527,16 +1914,36 @@ function shareCurrentSong() {
     return
   }
 
+<<<<<<< HEAD
   messages.value.push({
     id: `msg-${Date.now()}`,
     from: 'You',
+=======
+  const sharedMessage = {
+    id: createChatMessageId(),
+    from: 'You',
+    senderId: currentChatIdentity(),
+>>>>>>> 41b7cfc (Update SYNX music website)
     text: 'Listening to this right now.',
     track: currentTrack.value,
     reactions: { '🎵': ['You'] },
     replyTo: null,
+<<<<<<< HEAD
     timestamp: 'JUST NOW',
   })
 
+=======
+    replyToMessageId: null,
+    timestamp: messageTimestamp(),
+    createdAt: new Date().toISOString(),
+  }
+  messages.value.push(sharedMessage)
+
+  if (!persistChatHistory()) {
+    messages.value = messages.value.filter((message) => message.id !== sharedMessage.id)
+    return
+  }
+>>>>>>> 41b7cfc (Update SYNX music website)
   notify('Track shared to chat')
 }
 
@@ -1564,6 +1971,7 @@ async function searchSpotify(query = search.value) {
   }
 }
 
+<<<<<<< HEAD
 function sendMessage() {
   const text = newMessage.value.trim()
   if (!text) return
@@ -1579,6 +1987,72 @@ function sendMessage() {
 
   newMessage.value = ''
   replyTarget.value = null
+=======
+function handleComposerEnter(event) {
+  if (event.shiftKey) return
+  event.preventDefault()
+  sendMessage()
+}
+
+function sendMessage() {
+  if (sendingMessage.value) return
+  const text = newMessage.value.trim()
+  if (!text) return
+
+  sendingMessage.value = true
+  const sentMessage = {
+    id: createChatMessageId(),
+    from: 'You',
+    senderId: currentChatIdentity(),
+    text,
+    reactions: {},
+    replyTo: null,
+    replyToMessageId: replyTarget.value?.id || null,
+    replyToConversationHandle: replyTarget.value?.conversationHandle || null,
+    timestamp: messageTimestamp(),
+    createdAt: new Date().toISOString(),
+  }
+  messages.value.push(sentMessage)
+
+  if (!persistChatHistory()) {
+    messages.value = messages.value.filter((message) => message.id !== sentMessage.id)
+    sendingMessage.value = false
+    return
+  }
+  newMessage.value = ''
+  replyTarget.value = null
+  sendingMessage.value = false
+}
+
+async function jumpToReply(message) {
+  const reply = replyPreview(message)
+  if (!message.replyToMessageId && !message.replyTo?.id) {
+    notify('The original message is no longer available.')
+    return
+  }
+  if (message.replyToConversationHandle && message.replyToConversationHandle !== chatFriends[activeFriend.value].handle) {
+    notify('The original message belongs to a different conversation.')
+    return
+  }
+  if (reply.unavailable) {
+    notify('The original message is no longer available.')
+    return
+  }
+
+  await nextTick()
+  const target = document.getElementById(`chat-message-${reply.id}`)
+  if (!target || !chatMessageContainer.value?.contains(target)) {
+    notify('The original message is not available in this conversation.')
+    return
+  }
+
+  clearTimeout(chatHighlightTimer)
+  highlightedMessageId.value = reply.id
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  chatHighlightTimer = setTimeout(() => {
+    highlightedMessageId.value = ''
+  }, 2200)
+>>>>>>> 41b7cfc (Update SYNX music website)
 }
 
 async function copyShareLink() {
@@ -1588,6 +2062,7 @@ async function copyShareLink() {
   } catch {
     notify('Your share card is ready to share')
   }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 
@@ -1600,6 +2075,16 @@ async function copyShareLink() {
 
 function handleKeydown(event) {
   if (event.key === 'Escape') isExpanded.value = false
+=======
+}
+
+function handleKeydown(event) {
+  if (event.key === 'Escape') {
+    isExpanded.value = false
+    activeMessageActionsId.value = null
+    if (unsendTargetId.value) cancelUnsendMessage()
+  }
+>>>>>>> 41b7cfc (Update SYNX music website)
 }
 
 function toggleTheme() {
@@ -1617,6 +2102,9 @@ function toggleVolume() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 watch(volume, (value) => {
   if (playbackProvider.value === 'youtube' && youtubePlayerReady) youtubePlayer.setVolume(value)
   else if (audioElement.value) audioElement.value.volume = value / 100
@@ -1624,6 +2112,21 @@ watch(volume, (value) => {
 
 onMounted(() => {
   if (audioElement.value) audioElement.value.volume = volume.value / 100
+<<<<<<< HEAD
+=======
+  if (typeof BroadcastChannel !== 'undefined') {
+    chatSyncChannel = new BroadcastChannel('synx-chat-history')
+    chatSyncChannel.onmessage = (event) => {
+      applyIncomingChatSnapshot(event.data?.key, event.data?.snapshot)
+    }
+  }
+  chatStorageListener = (event) => {
+    if (event.key === activeChatStorageKey.value && event.newValue) {
+      applyIncomingChatSnapshot(event.key, event.newValue)
+    }
+  }
+  window.addEventListener('storage', chatStorageListener)
+>>>>>>> 41b7cfc (Update SYNX music website)
   loadAudioReport()
   loadYouTubeAPI().catch((error) => {
     youtubeApiStatus.value = 'error'
@@ -1661,12 +2164,15 @@ onMounted(() => {
     localStorage.removeItem('synx-discovery-preferences')
   }
 
+<<<<<<< HEAD
 =======
 onMounted(() => {
   const savedTheme = localStorage.getItem('synx-theme')
   if (savedTheme === 'dark' || savedTheme === 'light') theme.value = savedTheme
 
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   accountRegistry.value = getStoredAccounts()
 
   const saved = localStorage.getItem('synx-state')
@@ -1675,6 +2181,9 @@ onMounted(() => {
     const state = JSON.parse(saved)
     if (Array.isArray(state.savedTracks)) savedTracks.value = state.savedTracks
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
     if (Array.isArray(state.libraries)) libraries.value = state.libraries.map((library) => {
       const starterTracks = starterArchiveTrackIds[library.id]
       const isStarterArchive = library.id <= 3 && ['Midnight drive', 'Soft focus', 'After hours'].includes(library.title)
@@ -1683,17 +2192,30 @@ onMounted(() => {
         trackIds: Array.isArray(library.trackIds) ? library.trackIds : isStarterArchive ? [...starterTracks] : [],
       }
     })
+<<<<<<< HEAD
 =======
     if (Array.isArray(state.libraries)) libraries.value = state.libraries
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
   } catch {
     localStorage.removeItem('synx-state')
   }
 })
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 onBeforeUnmount(() => {
   clearInterval(youtubeProgressTimer)
+=======
+onBeforeUnmount(() => {
+  clearInterval(youtubeProgressTimer)
+  clearInterval(chatPollTimer)
+  clearTimeout(chatHighlightTimer)
+  clearTimeout(messagePressTimer)
+  window.removeEventListener('storage', chatStorageListener)
+  chatSyncChannel?.close()
+>>>>>>> 41b7cfc (Update SYNX music website)
   youtubePlayer?.destroy?.()
   youtubePlayer = null
   youtubePlayerReady = false
@@ -1701,8 +2223,11 @@ onBeforeUnmount(() => {
   if (audioElement.value) audioElement.value.removeAttribute('src')
 })
 
+<<<<<<< HEAD
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 watch([savedTracks, libraries], () => {
   if (import.meta.client) localStorage.setItem('synx-state', JSON.stringify({ savedTracks: savedTracks.value, libraries: libraries.value }))
 }, { deep: true })
@@ -1715,13 +2240,19 @@ watch(theme, (value) => {
 <template>
   <div class="app-shell" @keydown="handleKeydown">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
     <audio ref="audioElement" preload="metadata" @loadedmetadata="onAudioMetadata" @durationchange="onAudioMetadata" @timeupdate="onAudioTimeUpdate" @waiting="playbackStatus = 'loading'" @canplay="playbackStatus = isPlaying ? 'playing' : 'paused'" @playing="onAudioPlaying" @pause="onAudioPaused" @ended="onTrackEnded" @error="onAudioError"></audio>
     <div v-show="playbackProvider === 'youtube'" class="youtube-player-window" aria-label="YouTube embedded player">
       <div ref="youtubeMount" class="youtube-player-mount"></div>
       <span class="youtube-player-caption">YOUTUBE EMBED · {{ currentTrack?.title }}</span>
     </div>
+<<<<<<< HEAD
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
     <Iridescence
       :color="theme === 'dark' ? [0.46, 0.62, 0.76] : [0.95, 0.42, 0.24]"
       :speed="0.8"
@@ -1735,10 +2266,14 @@ watch(theme, (value) => {
         <span class="micro-label">PERSONAL MUSIC IDENTITY ENGINE <i>//</i> EST. 2025</span>
         <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
 <<<<<<< HEAD
+<<<<<<< HEAD
         <button class="text-button" @click="enterApp">ENTER AS GUEST <span>↗</span></button>
 =======
         <button class="text-button" @click="enterAsGuest">ENTER AS GUEST <span>↗</span></button>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+        <button class="text-button" @click="enterApp">ENTER AS GUEST <span>↗</span></button>
+>>>>>>> 41b7cfc (Update SYNX music website)
       </header>
       <div class="welcome-grid" id="top">
         <main class="welcome-copy">
@@ -1773,6 +2308,7 @@ watch(theme, (value) => {
               <input id="create-email" v-model="createAccountEmail" type="email" placeholder="you@somewhere.com" autocomplete="email" />
               <label for="create-password">PASSWORD</label>
 <<<<<<< HEAD
+<<<<<<< HEAD
               <input id="create-password" v-model="createAccountPassword" type="password" placeholder="Create a password" autocomplete="new-password" />
 =======
               <div class="password-input-wrap">
@@ -1780,6 +2316,9 @@ watch(theme, (value) => {
                 <button class="password-visibility" type="button" :aria-label="showPassword ? 'Hide password' : 'View password'" :aria-pressed="showPassword" @click="showPassword = !showPassword">{{ showPassword ? 'HIDE' : 'VIEW' }}</button>
               </div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+              <input id="create-password" v-model="createAccountPassword" type="password" placeholder="Create a password" autocomplete="new-password" />
+>>>>>>> 41b7cfc (Update SYNX music website)
               <button type="button" class="switch-button switch-light spotify-connect" @click="connectSpotify">
                 <span class="spotify-mark">♪</span>
                 {{ spotifyConnected ? 'VS CODE SPOTIFY CONNECTED' : 'CONNECT VS CODE SPOTIFY' }}
@@ -1793,6 +2332,9 @@ watch(theme, (value) => {
             <h2>COME ON<br>IN<span>.</span></h2>
             <p class="login-intro">A whole library, built around<br>the person you already are.</p>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
             <form @submit.prevent="enterApp(true)">
               <label for="email">EMAIL ADDRESS</label>
               <input id="email" v-model="email" type="email" placeholder="you@somewhere.com" autocomplete="email" />
@@ -1802,6 +2344,7 @@ watch(theme, (value) => {
               <button class="switch-button switch-orange" type="submit">LOG IN <span>↗</span></button>
             </form>
             <button class="switch-button switch-light" @click="enterApp"><span class="google-g">G</span> CONTINUE WITH GOOGLE</button>
+<<<<<<< HEAD
 =======
             <form @submit.prevent="enterApp">
               <label for="email">EMAIL ADDRESS</label>
@@ -1816,6 +2359,8 @@ watch(theme, (value) => {
             </form>
             <button class="switch-button switch-light" type="button" @click="enterAsGuest"><span class="google-g">S</span> CONTINUE AS GUEST</button>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
             <button class="create-account" @click="openCreateAccount">NEW AROUND HERE? <strong>CREATE ACCOUNT ↗</strong></button>
             <button class="forgot" @click="notify('Demo mode: no password needed.')">FORGOT PASSWORD?</button>
           </div>
@@ -1835,16 +2380,23 @@ watch(theme, (value) => {
           </button>
         </nav>
 <<<<<<< HEAD
+<<<<<<< HEAD
         <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="showCreateLibrary = true">+</button></div>
 =======
         <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="openCreateLibrary">+</button></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+        <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="showCreateLibrary = true">+</button></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
         <button v-for="library in libraries" :key="library.id" class="side-library" @click="activeView = 'library'">
           <span class="side-library-mark" :style="{ backgroundColor: library.color }"></span>{{ library.title }}
         </button>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
           <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
         </div>
       </aside>
@@ -1858,6 +2410,7 @@ watch(theme, (value) => {
         <button type="button" class="mobile-player-control" aria-label="Next track" @click="playNextTrack">▶|</button>
         <span class="mobile-player-progress" :style="{ '--play-progress': `${progressPercent}%` }"></span>
       </section>
+<<<<<<< HEAD
 =======
           <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>{{ isGuest ? 'GUEST SESSION' : 'FREE FREQUENCY' }}</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div>
         </div>
@@ -1865,6 +2418,8 @@ watch(theme, (value) => {
 
       <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">Z</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div></header>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 
       <main class="main-content">
         <header class="topbar">
@@ -1873,10 +2428,14 @@ watch(theme, (value) => {
           <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
           <button class="notification-button" aria-label="Notifications" @click="notify('You are all caught up.')">♧<i></i></button>
 <<<<<<< HEAD
+<<<<<<< HEAD
           <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
 =======
           <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+          <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
         </header>
 
         <template v-if="spotifySearchQuery">
@@ -1914,6 +2473,7 @@ watch(theme, (value) => {
             <div class="describe-head"><div><span class="section-index">01 / DESCRIBE</span><h2>Start with <em>you.</em></h2></div><span class="system-stamp">SYNX PERSONALITY ENGINE<br>READY TO LISTEN <i>●</i></span></div>
             <textarea v-model="description" aria-label="Describe yourself" placeholder="What does today sound like?"></textarea>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <div class="mood-strip"><span class="mood-label">RIGHT NOW, I'M...</span><button v-for="mood in moodOptions" :key="mood" type="button" :aria-pressed="selectedMoods.includes(mood)" :disabled="isGenerating" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
             <p v-if="recommendationError" class="recommendation-feedback" role="alert">{{ recommendationError }}</p>
             <div class="describe-bottom"><span>NO GENRES. NO RULES. JUST YOUR WORDS.</span><button class="switch-button switch-orange generate-button" :disabled="isGenerating" @click="generateSound">{{ isGenerating ? 'BUILDING YOUR MIX…' : 'GENERATE MY SOUND' }} <span>{{ isGenerating ? '…' : '↗' }}</span></button></div>
@@ -1921,6 +2481,11 @@ watch(theme, (value) => {
             <div class="mood-strip"><span class="mood-label">RIGHT NOW, I'M...</span><button v-for="mood in ['Nostalgic', 'Late night', 'Restless', 'Soft focus']" :key="mood" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
             <div class="describe-bottom"><span>NO GENRES. NO RULES. JUST YOUR WORDS.</span><button class="switch-button switch-orange generate-button" @click="generateSound">GENERATE MY SOUND <span>↗</span></button></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+            <div class="mood-strip"><span class="mood-label">RIGHT NOW, I'M...</span><button v-for="mood in moodOptions" :key="mood" type="button" :aria-pressed="selectedMoods.includes(mood)" :disabled="isGenerating" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
+            <p v-if="recommendationError" class="recommendation-feedback" role="alert">{{ recommendationError }}</p>
+            <div class="describe-bottom"><span>NO GENRES. NO RULES. JUST YOUR WORDS.</span><button class="switch-button switch-orange generate-button" :disabled="isGenerating" @click="generateSound">{{ isGenerating ? 'BUILDING YOUR MIX…' : 'GENERATE MY SOUND' }} <span>{{ isGenerating ? '…' : '↗' }}</span></button></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
           </section>
 
           <FlipCard class="identity-flipper home-identity-flipper" :border-glow="false" eyebrow="SYNX / YOUR IDENTITY" :title="profileName" subtitle="YOUR CURRENT SOUND" description="Atmospheric sounds, emotional melodies, and music that feels like a scene you don't want to end." aria-label="Flip your current sound identity">
@@ -1940,12 +2505,17 @@ watch(theme, (value) => {
                 <article class="track-card">
                   <button class="cover-button" :aria-label="`Play ${track.title}`" @click="playTrack(track)"><img :src="imageUrl(track.cover)" :alt="`${track.mood} artwork for ${track.title}`" /><span class="cover-index">0{{ index + 1 }}</span><span class="cover-play">{{ currentTrack?.id === track.id && isPlaying ? 'Ⅱ' : '▶' }}</span></button>
 <<<<<<< HEAD
+<<<<<<< HEAD
                   <div class="track-card-meta"><div><h3><button class="track-title-button" @click="playTrack(track)">{{ track.title }}</button></h3><p>{{ track.artist }} <span>/</span> {{ track.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(track.id) }" :aria-label="savedTracks.includes(track.id) ? 'Remove saved track' : 'Save track'" @click="toggleSaved(track)">{{ savedTracks.includes(track.id) ? '♥' : '♡' }}</button></div>
                   <div class="track-card-foot"><LocalAudioChip :status="localAudioStatus(track)" :path="trackAudioUrl(track)" /><button v-if="trackSourceConfigured(track)" class="spotify-link-button" type="button" @click.stop="searchSpotify(`${track.title} ${track.artist}`)">FIND ON SPOTIFY</button><button v-else class="source-config-button" type="button" @click.stop="openYouTubeConfig(track)">⚠ VIDEO NEEDED</button><span>{{ track.mood.toUpperCase() }}</span><span>{{ track.duration }}</span></div>
 =======
                   <div class="track-card-meta"><div><h3>{{ track.title }}</h3><p>{{ track.artist }} <span>/</span> {{ track.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(track.id) }" :aria-label="savedTracks.includes(track.id) ? 'Remove saved track' : 'Save track'" @click="toggleSaved(track)">{{ savedTracks.includes(track.id) ? '♥' : '♡' }}</button></div>
                   <div class="track-card-foot"><button class="spotify-link-button" type="button" @click.stop="searchSpotify(`${track.title} ${track.artist}`)">FIND ON SPOTIFY</button><span>{{ track.mood.toUpperCase() }}</span><span>{{ track.duration }}</span></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+                  <div class="track-card-meta"><div><h3><button class="track-title-button" @click="playTrack(track)">{{ track.title }}</button></h3><p>{{ track.artist }} <span>/</span> {{ track.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(track.id) }" :aria-label="savedTracks.includes(track.id) ? 'Remove saved track' : 'Save track'" @click="toggleSaved(track)">{{ savedTracks.includes(track.id) ? '♥' : '♡' }}</button></div>
+                  <div class="track-card-foot"><LocalAudioChip :status="localAudioStatus(track)" :path="trackAudioUrl(track)" /><button v-if="trackSourceConfigured(track)" class="spotify-link-button" type="button" @click.stop="searchSpotify(`${track.title} ${track.artist}`)">FIND ON SPOTIFY</button><button v-else class="source-config-button" type="button" @click.stop="openYouTubeConfig(track)">⚠ VIDEO NEEDED</button><span>{{ track.mood.toUpperCase() }}</span><span>{{ track.duration }}</span></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
                 </article>
               </FlipCard>
             </div>
@@ -1954,10 +2524,14 @@ watch(theme, (value) => {
           <section class="content-section library-preview">
             <div class="section-title-row"><div><span class="section-index">04 / COLLECTED</span><h2>Your sound <em>archives.</em></h2></div><button class="inline-link" @click="activeView = 'library'">OPEN LIBRARY <span>↗</span></button></div>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <div class="library-grid"><FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${libraryTrackCount(library)} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ libraryTrackCount(library) }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="openArchive(library)">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
 =======
             <div class="library-grid"><FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${library.count} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ library.count }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="activeView = 'library'">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+            <div class="library-grid"><FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${libraryTrackCount(library)} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ libraryTrackCount(library) }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="openArchive(library)">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
           </section>
         </template>
 
@@ -1967,15 +2541,22 @@ watch(theme, (value) => {
             <div class="describe-head"><div><span class="section-index">01 / A LITTLE CONTEXT</span><h2>Describe your <em>today.</em></h2></div><span class="system-stamp">NO SEARCH TERMS<br>NEEDED <i>●</i></span></div>
             <textarea v-model="description" aria-label="Describe yourself" placeholder="I'm studying late, a little homesick, and need something that feels warm but keeps me focused..."></textarea>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <div class="mood-strip"><span class="mood-label">PICK A FEW SIGNALS</span><button v-for="mood in moodOptions" :key="mood" type="button" :aria-pressed="selectedMoods.includes(mood)" :disabled="isGenerating" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
 =======
             <div class="mood-strip"><span class="mood-label">PICK A FEW SIGNALS</span><button v-for="mood in ['Nostalgic', 'Late night', 'Restless', 'Soft focus', 'Rebellious', 'Cinematic']" :key="mood" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+            <div class="mood-strip"><span class="mood-label">PICK A FEW SIGNALS</span><button v-for="mood in moodOptions" :key="mood" type="button" :aria-pressed="selectedMoods.includes(mood)" :disabled="isGenerating" :class="{ chosen: selectedMoods.includes(mood) }" @click="selectedMoods.includes(mood) ? selectedMoods = selectedMoods.filter(item => item !== mood) : selectedMoods.push(mood)">{{ mood }} <b>{{ selectedMoods.includes(mood) ? '×' : '+' }}</b></button></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
             <div class="discover-style-picker">
               <div class="discover-style-copy"><span class="section-index">SOUND PALETTE</span><strong>{{ selectedStyle }}</strong><p>Choose a texture to guide your mix.</p></div>
               <OptionWheel :items="soundStyles" :model-value="soundStyles.indexOf(selectedStyle)" :text-color="theme === 'dark' ? '#aaa79e' : '#77766f'" :active-color="theme === 'dark' ? '#f5f2e9' : '#171714'" side="left" :font-size="1.35" :spacing="1.45" :curve="1" :tilt="5" :blur="1.3" :fade="0.28" :min-opacity="0.08" :smoothing="200" :inset="48" @change="selectSoundStyle" />
             </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
             <p v-if="recommendationError" class="recommendation-feedback" role="alert">{{ recommendationError }}</p>
             <div class="describe-bottom"><span>MOOD → MEANING → MUSIC</span><button class="switch-button switch-orange generate-button" :disabled="isGenerating" @click="generateSound">{{ isGenerating ? 'BUILDING YOUR MIX…' : 'READ MY FREQUENCY' }} <span>{{ isGenerating ? '…' : '↗' }}</span></button></div>
           </section>
@@ -1999,6 +2580,7 @@ watch(theme, (value) => {
               </div>
             </section>
             <section v-if="recommendedLibraries.length" class="content-section recommendation-archives"><div class="section-title-row"><div><span class="section-index">03 / FROM YOUR REAL ARCHIVES</span><h2>Collections that <em>fit.</em></h2></div></div><button v-for="item in recommendedLibraries" :key="item.library.id" class="recommendation-archive-row" type="button" @click="openArchive(item.library)"><img :src="imageUrl(item.library.cover, 120)" :alt="`${item.library.title} artwork`" /><span><strong>{{ item.library.title }}</strong><small>{{ item.members.length }} TRACKS · {{ item.matchingMembers.length }} MATCHING SONGS</small></span><b>OPEN ↗</b></button></section>
+<<<<<<< HEAD
 =======
             <div class="describe-bottom"><span>MOOD → MEANING → MUSIC</span><button class="switch-button switch-orange generate-button" @click="generateSound">READ MY FREQUENCY <span>↗</span></button></div>
           </section>
@@ -2011,6 +2593,8 @@ watch(theme, (value) => {
               </FlipCard>
             </div>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
             <div class="artist-strip">
               <div class="artist-strip-title"><span class="section-index">ARTISTS IN YOUR ORBIT</span><h2>People you'd <em>get.</em></h2></div>
               <FlipCard v-for="artist in artistMatches" :key="artist.name" class="artist-flipper" :border-glow="false" :height="44" :title="artist.name" :subtitle="artist.genre" aria-label="Flip artist details">
@@ -2023,6 +2607,9 @@ watch(theme, (value) => {
 
         <template v-else-if="activeView === 'library'">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
           <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="showCreateLibrary = true">+ NEW ARCHIVE</button></section>
           <section class="content-section library-full-section">
             <div class="section-title-row"><div><span class="section-index">01 / PERSONAL ARCHIVE</span><h2>Libraries <em>({{ libraries.length }})</em></h2></div><div class="library-tabs"><button v-for="filter in ['All', 'Songs', 'Albums', 'Artists', 'Libraries', 'Offline']" :key="filter" :class="{ selected: libraryTab === filter }" @click="filter === 'Offline' ? activeView = 'offline' : libraryTab = filter">{{ filter.toUpperCase() }}</button></div></div>
@@ -2041,6 +2628,7 @@ watch(theme, (value) => {
           </section>
           <section v-if="libraryTab === 'All' || libraryTab === 'Songs'" class="content-section archive-tracks"><div class="section-title-row"><div><span class="section-index">02 / PERSONAL ARCHIVE</span><h2>{{ libraryTab === 'Songs' ? 'Every song.' : 'Your saved sounds.' }}</h2></div><span class="match-note">{{ libraryTracks.length }} TRACKS IN YOUR ARCHIVE</span></div><div class="song-list"><div v-for="track in libraryTracks" :key="track.id" class="song-row"><button class="song-play" @click="playTrack(track)">{{ currentTrack?.id === track.id && isPlaying ? 'Ⅱ' : '▶' }}</button><img :src="imageUrl(track.cover, 100)" :alt="''" /><div class="song-name"><button class="song-title-button" @click="playTrack(track)">{{ track.title }}</button><span>{{ track.artist }}</span><LocalAudioChip :status="localAudioStatus(track)" :path="trackAudioUrl(track)" /></div><span class="song-genre">{{ track.genre }}</span><span class="song-mood">{{ track.mood }}</span><span class="song-duration">{{ track.duration }}</span><button v-if="!trackSourceConfigured(track)" class="source-config-button" :aria-label="`Configure a YouTube video for ${track.title}`" @click="openYouTubeConfig(track)">⚠ VIDEO NEEDED</button><button class="save-track" :class="{ saved: savedTracks.includes(track.id) }" :aria-label="savedTracks.includes(track.id) ? 'Remove from saved tracks' : 'Save track'" @click="toggleSaved(track)">{{ savedTracks.includes(track.id) ? '♥' : '♡' }}</button></div><p v-if="!libraryTracks.length" class="empty-state">Nothing here yet. Find a sound that feels like you.</p></div></section>
           <section v-if="libraryTab === 'Albums'" class="content-section"><div class="section-title-row"><div><span class="section-index">02 / ALBUM ARTWORK</span><h2>Cover stories <em>for your sound.</em></h2></div></div><div class="track-grid discover-track-grid"><FlipCard v-for="(track, index) in filteredTracks" :key="track.id" class="track-flipper" eyebrow="ALBUM / ARCHIVE" :title="track.title" :subtitle="track.artist" :description="`${track.genre} · ${track.duration}`" :aria-label="`Flip ${track.title} album card`"><article class="track-card"><button class="cover-button" @click="playTrack(track)"><img :src="imageUrl(track.cover)" :alt="`${track.title} cover artwork`" /><span class="cover-index">0{{ index + 1 }}</span><span class="cover-play">{{ currentTrack?.id === track.id && isPlaying ? 'Ⅱ' : '▶' }}</span></button><div class="track-card-meta"><div><h3><button class="track-title-button" @click="playTrack(track)">{{ track.title }}</button></h3><p>{{ track.artist }} <span>/</span> {{ track.genre }}</p></div></div></article></FlipCard></div></section>
+<<<<<<< HEAD
 =======
           <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="openCreateLibrary">+ NEW ARCHIVE</button></section>
           <section class="content-section library-full-section">
@@ -2054,6 +2642,8 @@ watch(theme, (value) => {
           <section v-if="libraryTab === 'All' || libraryTab === 'Songs'" class="content-section archive-tracks"><div class="section-title-row"><div><span class="section-index">02 / PERSONAL ARCHIVE</span><h2>{{ libraryTab === 'Songs' ? 'Every song.' : 'Your saved sounds.' }}</h2></div><span class="match-note">{{ libraryTracks.length }} TRACKS IN YOUR ARCHIVE</span></div><div class="song-list"><div v-for="track in libraryTracks" :key="track.id" class="song-row"><button class="song-play" @click="playTrack(track)">{{ currentTrack?.id === track.id && isPlaying ? 'Ⅱ' : '▶' }}</button><img :src="imageUrl(track.cover, 100)" :alt="''" /><div class="song-name"><strong>{{ track.title }}</strong><span>{{ track.artist }}</span></div><span class="song-genre">{{ track.genre }}</span><span class="song-mood">{{ track.mood }}</span><span class="song-duration">{{ track.duration }}</span><button class="save-track" :class="{ saved: savedTracks.includes(track.id) }" :aria-label="savedTracks.includes(track.id) ? 'Remove from saved tracks' : 'Save track'" @click="toggleSaved(track)">{{ savedTracks.includes(track.id) ? '♥' : '♡' }}</button></div><p v-if="!libraryTracks.length" class="empty-state">Nothing here yet. Find a sound that feels like you.</p></div></section>
           <section v-if="libraryTab === 'Albums'" class="content-section"><div class="section-title-row"><div><span class="section-index">02 / ALBUM ARTWORK</span><h2>Cover stories <em>for your sound.</em></h2></div></div><div class="track-grid discover-track-grid"><FlipCard v-for="(track, index) in filteredTracks" :key="track.id" class="track-flipper" eyebrow="ALBUM / ARCHIVE" :title="track.title" :subtitle="track.artist" :description="`${track.genre} · ${track.duration}`" :aria-label="`Flip ${track.title} album card`"><article class="track-card"><button class="cover-button" @click="playTrack(track)"><img :src="imageUrl(track.cover)" :alt="`${track.title} cover artwork`" /><span class="cover-index">0{{ index + 1 }}</span><span class="cover-play">▶</span></button><div class="track-card-meta"><div><h3>{{ track.title }}</h3><p>{{ track.artist }} <span>/</span> {{ track.genre }}</p></div></div></article></FlipCard></div></section>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
           <section v-if="libraryTab === 'Artists'" class="content-section"><div class="section-title-row"><div><span class="section-index">02 / ARTISTS</span><h2>In your <em>orbit.</em></h2></div></div><FlipCard v-for="artist in artistMatches" :key="artist.name" class="artist-flipper library-artist-flipper" :height="44" :title="artist.name" :subtitle="artist.genre" aria-label="Flip artist details"><div class="artist-row"><img :src="imageUrl(artist.cover, 180)" :alt="`${artist.name} artist artwork`" /><strong>{{ artist.name }}</strong><span>{{ artist.genre }}</span><b>↗</b></div><template #back><div class="artist-flip-back"><span class="section-index">ARTIST MATCH</span><strong>{{ artist.name }}</strong><small>{{ artist.genre }} · IN YOUR ORBIT</small></div></template></FlipCard></section>
         </template>
 
@@ -2084,6 +2674,7 @@ watch(theme, (value) => {
                 </div>
               </div>
 
+<<<<<<< HEAD
               <div class="chat-messages">
                 <p v-if="!messages.length" class="empty-state chat-empty-state">No messages in this conversation.</p>
                 <div v-for="(message, index) in messages" :key="message.id || index" class="chat-message" :class="{ 'message-mine': message.from === 'You', 'message-swiping': messageSwipe?.id === message.id, 'message-actions-open': activeMessageActionsId === message.id, 'swipe-reply-ready': messageSwipe?.id === message.id && messageSwipe.offset >= 18 }" :style="messageSwipe?.id === message.id ? { '--swipe-offset': `${messageSwipe.offset}px` } : null" @pointerdown="startMessageSwipe($event, message)" @pointermove="moveMessageSwipe($event, message)" @pointerup="endMessageSwipe($event, message)" @pointercancel="cancelMessageSwipe" @contextmenu="openMessageActions($event, message)">
@@ -2101,6 +2692,30 @@ watch(theme, (value) => {
                   <div v-if="message.replyTo" class="reply-preview">
                     <span>Replying to {{ message.replyTo.from }}</span>
                     <strong>{{ message.replyTo.text }}</strong>
+=======
+              <div ref="chatMessageContainer" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
+                <p v-if="chatLoading" class="empty-state chat-empty-state" role="status">Loading conversation…</p>
+                <p v-else-if="chatError" class="chat-error-state" role="alert">{{ chatError }}</p>
+                <p v-else-if="!messages.length" class="empty-state chat-empty-state">No messages in this conversation.</p>
+                <div v-for="(message, index) in messages" :id="`chat-message-${message.id || index}`" :key="message.id || index" class="chat-message" :class="{ 'message-mine': isOwnMessage(message), 'message-swiping': messageSwipe?.id === message.id, 'message-actions-open': activeMessageActionsId === message.id, 'message-highlighted': highlightedMessageId === message.id, 'swipe-reply-ready': messageSwipe?.id === message.id && messageSwipe.offset >= 18 }" :data-message-id="message.id" :style="messageSwipe?.id === message.id ? { '--swipe-offset': `${messageSwipe.offset}px` } : null" @pointerdown="startMessageSwipe($event, message)" @pointermove="moveMessageSwipe($event, message)" @pointerup="endMessageSwipe($event, message)" @pointercancel="cancelMessageSwipe" @contextmenu="openMessageActions($event, message)">
+                  <div class="message-meta">
+                    <span class="message-author">{{ message.from }}</span>
+                    <button type="button" class="message-menu-toggle" :aria-label="`Message actions for ${message.from}`" aria-haspopup="menu" :aria-expanded="activeMessageActionsId === message.id" @click.stop="toggleMessageActions(message)">···</button>
+                    <div v-if="activeMessageActionsId === message.id" class="message-actions" role="menu" aria-label="Message actions">
+                      <button type="button" role="menuitem" class="message-action-label" @click="setReplyTarget(message)">Reply</button>
+                      <button v-if="isOwnMessage(message)" type="button" role="menuitem" class="message-action-label unsend-button" @click="requestUnsendMessage(message.id)">Unsend message</button>
+                      <button v-for="emoji in reactionOptions" :key="emoji" type="button" role="menuitem" class="mini-action" @click="toggleReaction(message.id, emoji)" :aria-label="`React with ${emoji}`">{{ emoji }}</button>
+                    </div>
+                  </div>
+
+                  <p class="message-content" @click.stop="toggleMessageActions(message)">{{ message.text }}</p>
+
+                  <div v-if="(message.replyToMessageId || message.replyTo) && !replyPreview(message).unavailable" class="reply-preview">
+                    <button type="button" class="reply-jump-button" @click.stop="jumpToReply(message)">
+                      <span>Replying to {{ replyPreview(message).from }}</span>
+                      <strong>{{ excerpt(replyPreview(message).text) }}</strong>
+                    </button>
+>>>>>>> 41b7cfc (Update SYNX music website)
                   </div>
 
                   <div v-if="message.track" class="shared-track">
@@ -2110,14 +2725,20 @@ watch(theme, (value) => {
                       <span>{{ message.track.artist }}</span>
                       <small>{{ message.track.album }}</small>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
                       <LocalAudioChip :status="localAudioStatus(message.track)" :path="trackAudioUrl(message.track)" />
                     </div>
                     <button v-if="trackSourceConfigured(message.track)" type="button" @click="playTrack(message.track)">▶</button>
                     <button v-else type="button" class="shared-track-config" @click="openYouTubeConfig(message.track)">SET ID</button>
+<<<<<<< HEAD
 =======
                     </div>
                     <button type="button" @click="playTrack(message.track)">▶</button>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
                   </div>
 
                   <div class="message-footer">
@@ -2127,21 +2748,35 @@ watch(theme, (value) => {
                         <strong>{{ users.length }}</strong>
                       </button>
                     </div>
+<<<<<<< HEAD
                     <time>{{ message.timestamp }}</time>
+=======
+                    <time :datetime="message.createdAt || undefined">{{ message.timestamp }}</time>
+>>>>>>> 41b7cfc (Update SYNX music website)
                   </div>
                 </div>
               </div>
 
               <form class="chat-composer" @submit.prevent="sendMessage">
                 <div v-if="replyTarget" class="reply-preview composer-reply">
+<<<<<<< HEAD
                   <span>Replying to {{ replyTarget.from }}</span>
+=======
+                  <div><span>Replying to {{ replyTarget.from }}</span><strong>{{ excerpt(replyTarget.text) }}</strong></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
                   <button type="button" class="cancel-reply" @click="cancelReply">×</button>
                 </div>
 
                 <div class="composer-row">
+<<<<<<< HEAD
                   <input v-model="newMessage" placeholder="Send a thought, a track, a feeling..." aria-label="Message" />
                   <button type="button" class="share-button" aria-label="Share current track" @click="shareCurrentSong">↗</button>
                   <button type="submit" class="send-button">SEND</button>
+=======
+                  <textarea v-model="newMessage" rows="1" placeholder="Send a thought, a track, a feeling..." aria-label="Message" @keydown.enter="handleComposerEnter"></textarea>
+                  <button type="button" class="share-button" aria-label="Share current track" @click="shareCurrentSong">↗</button>
+                  <button type="submit" class="send-button" :disabled="sendingMessage || !newMessage.trim()">{{ sendingMessage ? 'SENDING…' : 'SEND' }}</button>
+>>>>>>> 41b7cfc (Update SYNX music website)
                 </div>
 
                 <div v-if="chatTypingText" class="typing-indicator">{{ chatTypingText }}</div>
@@ -2152,6 +2787,9 @@ watch(theme, (value) => {
 
         <template v-else-if="activeView === 'groups'">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
           <section class="page-heading"><span class="section-index">SYNX / 05</span><h1>LISTEN<br><em>IN GOOD COMPANY.</em></h1><p>One room. One queue. Everyone on the same wavelength.</p></section>
           <section class="room-layout">
             <div class="room-main">
@@ -2173,6 +2811,7 @@ watch(theme, (value) => {
             <FlipCard class="profile-flipper" eyebrow="01 / MY SOUND" title="Frequencies I return to" subtitle="YOUR SOUND PROFILE" description="Alternative · Indie · Electronic · Lo-Fi · Dream pop"><div class="profile-module"><span class="section-index">01 / MY SOUND</span><h2>THE FREQUENCIES<br>I RETURN TO.</h2><div class="genre-tags profile-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">INDIE</span><span class="genre-chip chip-green">ELECTRONIC</span><span class="genre-chip chip-pink">LO-FI</span><span class="genre-chip chip-yellow">DREAM POP</span></div></div></FlipCard>
             <FlipCard class="profile-flipper" eyebrow="02 / PERSONALITY IN WAVES" title="Your inner equalizer" subtitle="EMOTION 91 · NOSTALGIA 96" description="Energy 72 · Experiment 68 · Dance 43"><div class="profile-module"><span class="section-index">02 / PERSONALITY IN WAVES</span><h2>YOUR INNER<br>EQUALIZER.</h2><div class="personality-bars"><div v-for="(stat, index) in [{ name: 'ENERGY', value: 72 }, { name: 'EMOTION', value: 91 }, { name: 'EXPERIMENT', value: 68 }, { name: 'NOSTALGIA', value: 96 }, { name: 'DANCE', value: 43 }]" :key="stat.name"><span>{{ stat.name }}</span><i><b :style="{ width: `${stat.value}%`, backgroundColor: ['#f36b3e', '#70b9c6', '#78ad80', '#e58e9d', '#e8bf53'][index] }"></b></i><strong>{{ stat.value }}</strong></div></div></div></FlipCard>
             <FlipCard class="profile-flipper" eyebrow="03 / SHARED WITH THE WORLD" title="Your open archives" subtitle="PUBLIC LIBRARIES" description="Saved collections from your personal library."><div class="profile-module profile-library-module"><span class="section-index">03 / SHARED WITH THE WORLD</span><h2>YOUR OPEN<br>ARCHIVES.</h2><div v-for="library in libraries.filter(item => item.saved).slice(0, 2)" :key="library.id" class="profile-library-row"><img :src="imageUrl(library.cover, 120)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ libraryTrackCount(library) }} TRACKS · PUBLIC</span></div><b>↗</b></div></div></FlipCard>
+<<<<<<< HEAD
 =======
           <ListeningRoom :profile-name="profileName" :is-guest="isGuest" @require-account="requireAccount" />
         </template>
@@ -2185,32 +2824,44 @@ watch(theme, (value) => {
             <FlipCard class="profile-flipper" eyebrow="02 / PERSONALITY IN WAVES" title="Your inner equalizer" subtitle="EMOTION 91 · NOSTALGIA 96" description="Energy 72 · Experiment 68 · Dance 43"><div class="profile-module"><span class="section-index">02 / PERSONALITY IN WAVES</span><h2>YOUR INNER<br>EQUALIZER.</h2><div class="personality-bars"><div v-for="(stat, index) in [{ name: 'ENERGY', value: 72 }, { name: 'EMOTION', value: 91 }, { name: 'EXPERIMENT', value: 68 }, { name: 'NOSTALGIA', value: 96 }, { name: 'DANCE', value: 43 }]" :key="stat.name"><span>{{ stat.name }}</span><i><b :style="{ width: `${stat.value}%`, backgroundColor: ['#f36b3e', '#70b9c6', '#78ad80', '#e58e9d', '#e8bf53'][index] }"></b></i><strong>{{ stat.value }}</strong></div></div></div></FlipCard>
             <FlipCard class="profile-flipper" eyebrow="03 / SHARED WITH THE WORLD" title="Your open archives" subtitle="PUBLIC LIBRARIES" description="Saved collections from your personal library."><div class="profile-module profile-library-module"><span class="section-index">03 / SHARED WITH THE WORLD</span><h2>YOUR OPEN<br>ARCHIVES.</h2><div v-for="library in libraries.filter(item => item.saved).slice(0, 2)" :key="library.id" class="profile-library-row"><img :src="imageUrl(library.cover, 120)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} TRACKS · PUBLIC</span></div><b>↗</b></div></div></FlipCard>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
             <FlipCard class="profile-flipper" eyebrow="04 / CURRENTLY FEELING" title="The mood is a place" subtitle="YOUR CURRENT SIGNALS" :description="selectedMoods.join(' · ')"><div class="profile-module profile-mood-module"><span class="section-index">04 / CURRENTLY FEELING</span><h2>THE MOOD<br>IS A PLACE.</h2><div class="profile-moods"><span>✳ NOSTALGIC</span><span>◷ LATE NIGHT</span><span>↗ RESTLESS</span><span>♫ SOFT FOCUS</span></div><button class="inline-link" @click="activeView = 'discover'">UPDATE YOUR SOUND <span>↗</span></button></div></FlipCard>
           </section>
         </template>
 
         <template v-else>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
           <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ libraryTrackCount(library) }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
         <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">LOG OUT ↗</button></footer>
+<<<<<<< HEAD
 =======
           <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
         <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">{{ isGuest ? 'EXIT GUEST ↗' : 'LOG OUT ↗' }}</button></footer>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
       </main>
 
       <aside class="right-rail">
         <div class="rail-title"><span>ON YOUR FREQUENCY</span><button aria-label="More activity" @click="notify('You are all caught up.')">···</button></div>
         <BorderGlow class="rail-card-glow" :enabled="!['home', 'discover', 'chat'].includes(activeView)">
 <<<<<<< HEAD
+<<<<<<< HEAD
           <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><div class="now-playing-actions"><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button><button class="track-share-button" type="button" @click="shareCurrentSong">↗</button></div></div><input class="player-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><div class="player-times"><span>{{ formatTime(currentTime) }}</span><span>{{ formatTime(durationSeconds) }}</span></div><div v-if="playbackStatus === 'loading'" class="player-status">Loading audio…</div><div v-else-if="audioError" class="player-status" role="status">{{ audioError }}<button v-if="playbackProvider === 'youtube'" type="button" class="source-config-button" @click="openYouTubeConfig(currentTrack)">SET VIDEO ID</button></div><div v-else-if="playbackStatus === 'unavailable'" class="player-status">Local MP3 not available — add the file to public/music/.</div><div class="mini-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="mini-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button></div><div class="volume-control"><button class="volume-toggle" type="button" :aria-label="volume ? 'Mute volume' : 'Restore volume'" @click="toggleVolume">{{ volume ? '◖' : '◖̸' }}</button><WakeSlider :value="volume" :min="0" :max="100" :step="1" :bars="28" :height="42" :rest-height="9" :gap="3" fill-color="#f26a3d" :track-color="theme === 'dark' ? '#4b4c45' : '#cbc7bc'" crest-color="#f5aa8f" :sensitivity="1" :reach="6" :skew="0.6" :glide="0.3" :smoothing="100" show-value aria-label="Playback volume" @change="volume = $event" /></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
 =======
           <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><div class="now-playing-actions"><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button><button class="track-share-button" type="button" @click="shareCurrentSong">↗</button></div></div><div class="mini-progress"><span></span></div><div class="player-times"><span>2:14</span><span>{{ currentTrack?.duration }}</span></div><div class="mini-controls"><button @click="notify('Previous track')">|◀</button><button class="mini-play" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button></div><div class="volume-control"><button class="volume-toggle" type="button" :aria-label="volume ? 'Mute volume' : 'Restore volume'" @click="toggleVolume">{{ volume ? '◖' : '◖̸' }}</button><WakeSlider :value="volume" :min="0" :max="100" :step="1" :bars="28" :height="42" :rest-height="9" :gap="3" fill-color="#f26a3d" :track-color="theme === 'dark' ? '#4b4c45' : '#cbc7bc'" crest-color="#f5aa8f" :sensitivity="1" :reach="6" :skew="0.6" :glide="0.3" :smoothing="100" show-value aria-label="Playback volume" @change="volume = $event" /></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+          <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><div class="now-playing-actions"><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button><button class="track-share-button" type="button" @click="shareCurrentSong">↗</button></div></div><input class="player-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><div class="player-times"><span>{{ formatTime(currentTime) }}</span><span>{{ formatTime(durationSeconds) }}</span></div><div v-if="playbackStatus === 'loading'" class="player-status">Loading audio…</div><div v-else-if="audioError" class="player-status" role="status">{{ audioError }}<button v-if="playbackProvider === 'youtube'" type="button" class="source-config-button" @click="openYouTubeConfig(currentTrack)">SET VIDEO ID</button></div><div v-else-if="playbackStatus === 'unavailable'" class="player-status">Local MP3 not available — add the file to public/music/.</div><div class="mini-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="mini-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button></div><div class="volume-control"><button class="volume-toggle" type="button" :aria-label="volume ? 'Mute volume' : 'Restore volume'" @click="toggleVolume">{{ volume ? '◖' : '◖̸' }}</button><WakeSlider :value="volume" :min="0" :max="100" :step="1" :bars="28" :height="42" :rest-height="9" :gap="3" fill-color="#f26a3d" :track-color="theme === 'dark' ? '#4b4c45' : '#cbc7bc'" crest-color="#f5aa8f" :sensitivity="1" :reach="6" :skew="0.6" :glide="0.3" :smoothing="100" show-value aria-label="Playback volume" @change="volume = $event" /></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
+>>>>>>> 41b7cfc (Update SYNX music website)
         </BorderGlow>
         <BorderGlow class="rail-card-glow" :enabled="!['home', 'discover', 'chat'].includes(activeView)">
           <section class="rail-friends"><div class="rail-subhead"><span>YOUR PEOPLE</span><button @click="activeView = 'chat'">ALL ↗</button></div><button v-for="friend in chatFriends.slice(0, 2)" :key="friend.handle" class="rail-friend" @click="activeView = 'chat'"><span class="avatar rail-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span><span><strong>{{ friend.name }}</strong><small>{{ friend.active ? 'LISTENING NOW' : 'OFFLINE' }}</small></span><b>♫</b></button></section>
@@ -2224,10 +2875,17 @@ watch(theme, (value) => {
       <nav class="mobile-nav" aria-label="Mobile navigation"><button v-for="item in navigation.filter(item => ['home', 'discover', 'library', 'chat', 'profile'].includes(item.id))" :key="item.id" :class="{ active: activeView === item.id }" @click="activeView = item.id"><span>{{ item.icon }}</span><small>{{ item.label }}</small></button></nav>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
       <div v-if="isExpanded" class="player-overlay" @click.self="isExpanded = false"><button class="close-expanded" aria-label="Close player" @click="isExpanded = false">×</button><div class="expanded-player"><span class="section-index">SYNX / NOW PLAYING</span><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="currentTrack?.title" /><div class="expanded-track-info"><div><h2>{{ currentTrack?.title }}</h2><p>{{ currentTrack?.artist }} · {{ currentTrack?.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button></div><input class="player-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><div class="player-times"><span>{{ formatTime(currentTime) }}</span><span>{{ formatTime(durationSeconds) }}</span></div><div v-if="playbackStatus === 'loading'" class="player-status">Loading audio…</div><div v-else-if="audioError" class="player-status" role="status">{{ audioError }}<button v-if="playbackProvider === 'youtube'" type="button" class="source-config-button" @click="openYouTubeConfig(currentTrack)">SET VIDEO ID</button></div><div v-else-if="playbackStatus === 'unavailable'" class="player-status">Local MP3 not available — add the file to public/music/.</div><div class="mini-controls expanded-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="mini-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button></div><div class="expanded-actions"><button @click="toggleSaved(currentTrack)">♡ SAVE TO ARCHIVE</button><button @click="copyShareLink">↗ SHARE THIS SOUND</button></div></div></div>
 
       <div v-if="showCreateLibrary" class="modal-backdrop" @click.self="showCreateLibrary = false"><form class="create-modal" @submit.prevent="createLibrary"><button type="button" class="modal-close" aria-label="Close" @click="showCreateLibrary = false">×</button><span class="section-index">SYNX ARCHIVE SYSTEM // NEW</span><h2>GIVE IT A<br><em>FEELING.</em></h2><label for="library-name">ARCHIVE NAME</label><input id="library-name" v-model="libraryName" placeholder="e.g. Blue hour, no plans" maxlength="32" /><button class="switch-button switch-orange" type="submit">CREATE ARCHIVE <span>↗</span></button></form></div>
       <div v-if="showDeleteConfirm" class="modal-backdrop chat-delete-backdrop" @click.self="showDeleteConfirm = false"><section class="create-modal chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><button type="button" class="modal-close" aria-label="Close" @click="showDeleteConfirm = false">×</button><span class="section-index">SYNX / CONVERSATION OPTIONS</span><h2 id="delete-chat-title">DELETE THIS<br><em>CONVERSATION?</em></h2><p>This clears the messages with {{ chatFriends[activeFriend].name }}.</p><div class="chat-delete-actions"><button type="button" @click="showDeleteConfirm = false">CANCEL</button><button type="button" @click="deleteConversation">DELETE</button></div></section></div>
+<<<<<<< HEAD
+=======
+      <div v-if="unsendTargetId" class="modal-backdrop chat-delete-backdrop" @click.self="cancelUnsendMessage"><section class="create-modal chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="unsend-message-title"><button type="button" class="modal-close" aria-label="Close" :disabled="deletingMessage" @click="cancelUnsendMessage">×</button><span class="section-index">SYNX / MESSAGE OPTIONS</span><h2 id="unsend-message-title">UNSEND THIS<br><em>MESSAGE?</em></h2><p>The message will be removed from this conversation.</p><div class="chat-delete-actions"><button type="button" :disabled="deletingMessage" @click="cancelUnsendMessage">CANCEL</button><button type="button" :disabled="deletingMessage" @click="confirmUnsendMessage">{{ deletingMessage ? 'DELETING…' : 'UNSEND' }}</button></div></section></div>
+>>>>>>> 41b7cfc (Update SYNX music website)
       <div v-if="showYouTubeConfig" class="modal-backdrop" @click.self="showYouTubeConfig = false">
         <form class="create-modal youtube-config-modal" @submit.prevent="saveYouTubeVideoId">
           <button type="button" class="modal-close" aria-label="Close video configuration" @click="showYouTubeConfig = false">×</button>
@@ -2259,6 +2917,7 @@ watch(theme, (value) => {
           <div class="queue-catalog"><span class="section-index">ADD FROM YOUR CATALOG</span><div v-for="track in tracks" :key="track.id" class="queue-row"><span class="queue-track"><strong>{{ track.title }}</strong><small>{{ track.artist }}</small></span><button class="queue-add" type="button" :aria-label="`Add ${track.title} to queue`" @click="enqueueTrack(track)">+</button></div></div>
         </div>
       </Teleport>
+<<<<<<< HEAD
 =======
       <div v-if="isExpanded" class="player-overlay" @click.self="isExpanded = false"><button class="close-expanded" aria-label="Close player" @click="isExpanded = false">×</button><div class="expanded-player"><span class="section-index">SYNX / NOW PLAYING</span><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="currentTrack?.title" /><div class="expanded-track-info"><div><h2>{{ currentTrack?.title }}</h2><p>{{ currentTrack?.artist }} · {{ currentTrack?.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button></div><div class="mini-progress"><span></span></div><div class="player-times"><span>2:14</span><span>{{ currentTrack?.duration }}</span></div><div class="mini-controls expanded-controls"><button @click="notify('Previous track')">|◀</button><button class="mini-play" @click="isPlaying = !isPlaying">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button></div><div class="expanded-actions"><button @click="toggleSaved(currentTrack)">♡ SAVE TO ARCHIVE</button><button @click="copyShareLink">↗ SHARE THIS SOUND</button></div></div></div>
 
@@ -2277,6 +2936,8 @@ watch(theme, (value) => {
         <small>Demo accounts are stored in this browser and are not secure production authentication.</small>
       </section>
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
     </div>
   </div>
 </template>
@@ -2288,6 +2949,7 @@ watch(theme, (value) => {
 *{box-sizing:border-box}html{background:var(--paper);scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:13px;-webkit-font-smoothing:antialiased}button,input,textarea{font:inherit}button{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:3px}button{cursor:pointer}.app-shell{position:relative;min-height:100vh;isolation:isolate}.wordmark{color:var(--paper);font-family:var(--display);font-size:43px;font-weight:900;letter-spacing:0;line-height:.8;text-decoration:none}.wordmark-dot,.orange-period{color:var(--orange)}.micro-label,.eyebrow,.section-index,.system-stamp,.match-note,.side-section-label,.rail-title,.rail-section-label,.rail-subhead,.panel-top,.panel-bottom,.welcome-footnote,.art-stamp,.art-caption,.side-library-heading,.sidebar-user span,.breadcrumb,.search-box kbd,.mood-label,.describe-bottom>span,.track-card-foot,.cover-index,.genre-label,.signal-caption,.library-card-number,.library-card-info small,.song-genre,.song-mood,.song-duration,.friend-info small,.friend-presence,.chat-window-head>div span,.message-author,.chat-message time,.room-kicker,.room-side-title,.room-side-title strong,.listener-row div small,.listener-placeholder,.room-chat-label,.profile-cover>span,.personality-bars>div>span,.personality-bars>div>strong,.profile-library-row div span,.profile-moods,.offline-status,.storage-numbers,.offline-row div span,.offline-row>b,.offline-note,.page-footer,.inline-link,.rail-friend small,.rail-room-art>span,.rail-room>button,.rail-quote small,.song-row .song-duration{font-family:var(--mono);font-size:9px;letter-spacing:0;text-transform:uppercase}.eyebrow{display:flex;align-items:center;gap:8px;color:#a6a29a}.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 10px #f26a3d80}.section-index{color:#89867e}.inline-link{padding:0;border:0;background:none;color:var(--ink);font-weight:500}.inline-link span{color:var(--orange);margin-left:5px}.switch-button{height:44px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 15px;border:2px solid var(--ink);border-radius:0;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0;text-align:left;transition:transform .16s,box-shadow .16s}.switch-button:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--ink)}.switch-button:active{transform:translateY(1px);box-shadow:none}.switch-orange{background:var(--orange);color:var(--ink)}.switch-light{background:var(--paper);color:var(--ink)}.switch-dark{background:var(--ink);color:var(--paper)}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Welcome / login */
 .welcome-screen{position:relative;min-height:100vh;overflow:hidden;background:rgba(25,26,24,0.68);backdrop-filter:blur(3px);color:var(--paper);padding:0 6.1vw;z-index:1}.welcome-grain{position:absolute;inset:0;pointer-events:none;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E")}.welcome-topline{height:85px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff25;position:relative;z-index:1}.micro-label{color:#87877f}.micro-label i{color:var(--orange);font-style:normal;margin:0 8px}.text-button{padding:9px 0;border:0;background:none;color:var(--paper);font-family:var(--mono);font-size:9px}.text-button span{color:var(--orange);margin-left:8px}.welcome-grid{max-width:1370px;margin:auto;min-height:calc(100vh - 150px);display:grid;grid-template-columns:minmax(0,1.48fr) minmax(310px,.76fr);gap:8.5%;align-items:center;padding:55px 0 47px;position:relative;z-index:1}.welcome-copy{padding:0 0 16px}.welcome-copy .eyebrow{margin:0 0 16px}.fuzzy-eyebrow{display:flex;align-items:center;gap:8px;white-space:nowrap;margin:0 0 16px}.fuzzy-tagline{display:block;max-width:100%}.fuzzy-headline{display:grid;gap:0.2em;margin:0}.fuzzy-title-line{display:block;max-width:100%;height:auto;overflow:visible}.welcome-copy h1{margin:0;font-family:var(--display);font-size:clamp(74px,10.7vw,154px);font-weight:900;line-height:.77;letter-spacing:0}.welcome-copy h1>span:first-child{color:var(--orange)}.welcome-copy h1 .orange-period{color:var(--orange)}.welcome-description{margin:22px 0 25px;color:#a7a49c;font-size:14px;line-height:1.7}.welcome-description strong{color:var(--paper);font-weight:500}.welcome-art{height:clamp(210px,26vw,330px);max-width:700px;position:relative;overflow:hidden;border:1px solid #ffffff48;background:#3a3530}.welcome-art>img{position:absolute;width:100%;height:100%;object-fit:cover;filter:saturate(.63) brightness(.68)}.welcome-art:after{position:absolute;content:'';inset:0;background:linear-gradient(90deg,#191a1830 25%,transparent 67%),linear-gradient(0deg,#131412ce,transparent 60%)}.art-stamp{position:absolute;top:17px;left:17px;z-index:1;color:var(--paper);line-height:1.6}.art-stamp span{color:var(--orange)}.art-caption{position:absolute;z-index:1;left:21px;bottom:20px;display:grid;gap:6px}.art-caption span{color:#d1bba6;font-size:8px}.art-caption b{font-family:var(--display);font-size:22px;letter-spacing:0}.record{position:absolute;z-index:1;width:clamp(175px,24vw,295px);aspect-ratio:1;border-radius:50%;right:clamp(8px,7vw,95px);top:50%;transform:translateY(-50%);background:repeating-radial-gradient(circle,#171716 0 2px,#292927 3px 4px,#191918 5px 7px);box-shadow:0 8px 28px #0808087a;animation:record-spin 13s linear infinite}.record-label{position:absolute;inset:36%;display:grid;place-content:center;border-radius:50%;background:var(--orange);font-family:var(--display);font-weight:900;font-size:24px;color:var(--ink);text-align:center}.record-label span{font-size:10px}.art-equalizer{position:absolute;z-index:1;right:15px;bottom:16px;display:flex;gap:3px;align-items:end;height:23px}.art-equalizer i{display:block;width:3px;background:var(--orange);animation:equalize .9s ease-in-out infinite alternate}.art-equalizer i:nth-child(3n){animation-delay:.25s}.art-equalizer i:nth-child(2n){animation-delay:.4s}.welcome-footnote{display:flex;justify-content:space-between;color:#77776e;font-size:8px;margin-top:12px}.welcome-footnote span:first-child{color:var(--orange)}.login-panel{align-self:center;border:1px solid #a39d8c80;background:#222320;box-shadow:8px 8px 0 #090a09;position:relative}.login-panel:before,.login-panel:after{content:'';position:absolute;width:6px;height:6px;border:1px solid #8b877e;border-radius:50%;left:12px;top:12px}.login-panel:after{left:auto;right:12px}.panel-top,.panel-bottom{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #ffffff20;color:#85847b;font-size:8px}.panel-top span:last-child{color:var(--green)}.login-inner{padding:28px 30px}.login-inner>.eyebrow{font-size:8px}.login-inner h2{font-family:var(--display);font-size:61px;line-height:.8;margin:14px 0 12px}.login-inner h2 span{color:var(--orange)}.login-intro{color:#a09d94;font-size:12px;line-height:1.6;margin:0 0 24px}.login-inner form{display:grid}.login-inner label,.create-modal label{display:flex;justify-content:space-between;margin:0 0 7px;color:#9b998f;font-family:var(--mono);font-size:8px}.optional{color:#64645d}.login-inner input,.create-modal input{height:42px;padding:0 11px;margin:0 0 17px;border:1px solid #53534b;background:#191a18;color:var(--paper);font-family:var(--mono);font-size:10px}.login-inner input::placeholder,.create-modal input::placeholder{color:#67675f}.login-inner form .switch-button{margin-top:3px}.login-inner>.switch-button{width:100%;margin-top:10px}.google-g{color:#87b6e0;font-family:var(--ui);font-weight:700;font-size:13px}.create-account{width:100%;margin-top:23px;padding:0;background:none;border:0;color:#949188;font-family:var(--mono);font-size:8px;text-align:left}.create-account strong{color:var(--orange);font-weight:500;margin-left:5px}.forgot{display:block;margin:14px 0 0 auto;border:0;background:none;color:#77766f;font-family:var(--mono);font-size:8px}.panel-bottom{border-top:1px solid #ffffff20;border-bottom:0;font-size:7px;padding:12px 17px}.panel-bottom span:last-child{color:var(--orange)}.welcome-marquee{height:37px;display:flex;overflow:hidden;border-top:1px solid #ffffff20;align-items:center;color:var(--orange);font-family:var(--display);font-size:18px;font-weight:700;white-space:nowrap;position:relative;z-index:1}.welcome-marquee span{flex-shrink:0;min-width:100%;animation:marquee 25s linear infinite}
 =======
@@ -2297,6 +2959,10 @@ watch(theme, (value) => {
 .welcome-screen{position:relative;min-height:100vh;overflow:hidden;background:rgba(25,26,24,0.68);backdrop-filter:blur(3px);color:var(--paper);padding:0 6.1vw;z-index:1}.welcome-grain{position:absolute;inset:0;pointer-events:none;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E")}.welcome-topline{height:85px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff25;position:relative;z-index:1}.micro-label{color:#87877f}.micro-label i{color:var(--orange);font-style:normal;margin:0 8px}.text-button{padding:9px 0;border:0;background:none;color:var(--paper);font-family:var(--mono);font-size:9px}.text-button span{color:var(--orange);margin-left:8px}.welcome-grid{max-width:1370px;margin:auto;min-height:calc(100vh - 150px);display:grid;grid-template-columns:minmax(0,1.48fr) minmax(310px,.76fr);gap:8.5%;align-items:center;padding:55px 0 47px;position:relative;z-index:1}.welcome-copy{padding:0 0 16px}.welcome-copy .eyebrow{margin:0 0 16px}.fuzzy-eyebrow{display:flex;align-items:center;gap:8px;white-space:nowrap;margin:0 0 16px}.fuzzy-tagline{display:block;max-width:100%}.fuzzy-headline{display:grid;gap:0.2em;margin:0}.fuzzy-title-line{display:block;max-width:100%;height:auto;overflow:visible}.welcome-copy h1{margin:0;font-family:var(--display);font-size:clamp(74px,10.7vw,154px);font-weight:900;line-height:.77;letter-spacing:0}.welcome-copy h1>span:first-child{color:var(--orange)}.welcome-copy h1 .orange-period{color:var(--orange)}.welcome-description{margin:22px 0 25px;color:#a7a49c;font-size:14px;line-height:1.7}.welcome-description strong{color:var(--paper);font-weight:500}.welcome-art{height:clamp(210px,26vw,330px);max-width:700px;position:relative;overflow:hidden;border:1px solid #ffffff48;background:#3a3530}.welcome-art>img{position:absolute;width:100%;height:100%;object-fit:cover;filter:saturate(.63) brightness(.68)}.welcome-art:after{position:absolute;content:'';inset:0;background:linear-gradient(90deg,#191a1830 25%,transparent 67%),linear-gradient(0deg,#131412ce,transparent 60%)}.art-stamp{position:absolute;top:17px;left:17px;z-index:1;color:var(--paper);line-height:1.6}.art-stamp span{color:var(--orange)}.art-caption{position:absolute;z-index:1;left:21px;bottom:20px;display:grid;gap:6px}.art-caption span{color:#d1bba6;font-size:8px}.art-caption b{font-family:var(--display);font-size:22px;letter-spacing:0}.record{position:absolute;z-index:1;width:clamp(175px,24vw,295px);aspect-ratio:1;border-radius:50%;right:clamp(8px,7vw,95px);top:50%;transform:translateY(-50%);background:repeating-radial-gradient(circle,#171716 0 2px,#292927 3px 4px,#191918 5px 7px);box-shadow:0 8px 28px #0808087a;animation:record-spin 13s linear infinite}.record-label{position:absolute;inset:36%;display:grid;place-content:center;border-radius:50%;background:var(--orange);font-family:var(--display);font-weight:900;font-size:24px;color:var(--ink);text-align:center}.record-label span{font-size:10px}.art-equalizer{position:absolute;z-index:1;right:15px;bottom:16px;display:flex;gap:3px;align-items:end;height:23px}.art-equalizer i{display:block;width:3px;background:var(--orange);animation:equalize .9s ease-in-out infinite alternate}.art-equalizer i:nth-child(3n){animation-delay:.25s}.art-equalizer i:nth-child(2n){animation-delay:.4s}.welcome-footnote{display:flex;justify-content:space-between;color:#77776e;font-size:8px;margin-top:12px}.welcome-footnote span:first-child{color:var(--orange)}.login-panel{align-self:center;border:1px solid #a39d8c80;background:#222320;box-shadow:8px 8px 0 #090a09;position:relative}.login-panel:before,.login-panel:after{content:'';position:absolute;width:6px;height:6px;border:1px solid #8b877e;border-radius:50%;left:12px;top:12px}.login-panel:after{left:auto;right:12px}.panel-top,.panel-bottom{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #ffffff20;color:#85847b;font-size:8px}.panel-top span:last-child{color:var(--green)}.login-inner{padding:28px 30px}.login-inner>.eyebrow{font-size:8px}.login-inner h2{font-family:var(--display);font-size:61px;line-height:.8;margin:14px 0 12px}.login-inner h2 span{color:var(--orange)}.login-intro{color:#a09d94;font-size:12px;line-height:1.6;margin:0 0 24px}.login-inner form{display:grid}.login-inner label,.create-modal label{display:flex;justify-content:space-between;margin:0 0 7px;color:#9b998f;font-family:var(--mono);font-size:8px}.optional{color:#64645d}.login-inner input,.create-modal input{height:42px;padding:0 11px;margin:0 0 17px;border:1px solid #53534b;background:#191a18;color:var(--paper);font-family:var(--mono);font-size:10px}.login-inner input::placeholder,.create-modal input::placeholder{color:#67675f}.login-inner form .switch-button{margin-top:3px}.login-inner>.switch-button{width:100%;margin-top:10px}.google-g{color:#87b6e0;font-family:var(--ui);font-weight:700;font-size:13px}.create-account{width:100%;margin-top:23px;padding:0;background:none;border:0;color:#949188;font-family:var(--mono);font-size:8px;text-align:left}.create-account strong{color:var(--orange);font-weight:500;margin-left:5px}.forgot{display:block;margin:14px 0 0 auto;border:0;background:none;color:#77766f;font-family:var(--mono);font-size:8px}.panel-bottom{border-top:1px solid #ffffff20;border-bottom:0;font-size:7px;padding:12px 17px}.panel-bottom span:last-child{color:var(--orange)}.welcome-marquee{height:37px;display:flex;overflow:hidden;border-top:1px solid #ffffff20;align-items:center;color:var(--orange);font-family:var(--display);font-size:18px;font-weight:700;white-space:nowrap;position:relative;z-index:1}.welcome-marquee span{flex-shrink:0;min-width:100%;animation:marquee 25s linear infinite}
 .password-input-wrap{position:relative;margin:0 0 17px}.login-inner .password-input-wrap input{width:100%;margin:0;padding-right:58px}.password-visibility{position:absolute;top:50%;right:10px;transform:translateY(-50%);padding:6px 0;border:0;background:transparent;color:var(--orange);font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:.04em}.password-visibility:hover{color:var(--paper)}.password-visibility:focus-visible{outline:1px solid var(--orange);outline-offset:3px}
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+/* Welcome / login */
+.welcome-screen{position:relative;min-height:100vh;overflow:hidden;background:rgba(25,26,24,0.68);backdrop-filter:blur(3px);color:var(--paper);padding:0 6.1vw;z-index:1}.welcome-grain{position:absolute;inset:0;pointer-events:none;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E")}.welcome-topline{height:85px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff25;position:relative;z-index:1}.micro-label{color:#87877f}.micro-label i{color:var(--orange);font-style:normal;margin:0 8px}.text-button{padding:9px 0;border:0;background:none;color:var(--paper);font-family:var(--mono);font-size:9px}.text-button span{color:var(--orange);margin-left:8px}.welcome-grid{max-width:1370px;margin:auto;min-height:calc(100vh - 150px);display:grid;grid-template-columns:minmax(0,1.48fr) minmax(310px,.76fr);gap:8.5%;align-items:center;padding:55px 0 47px;position:relative;z-index:1}.welcome-copy{padding:0 0 16px}.welcome-copy .eyebrow{margin:0 0 16px}.fuzzy-eyebrow{display:flex;align-items:center;gap:8px;white-space:nowrap;margin:0 0 16px}.fuzzy-tagline{display:block;max-width:100%}.fuzzy-headline{display:grid;gap:0.2em;margin:0}.fuzzy-title-line{display:block;max-width:100%;height:auto;overflow:visible}.welcome-copy h1{margin:0;font-family:var(--display);font-size:clamp(74px,10.7vw,154px);font-weight:900;line-height:.77;letter-spacing:0}.welcome-copy h1>span:first-child{color:var(--orange)}.welcome-copy h1 .orange-period{color:var(--orange)}.welcome-description{margin:22px 0 25px;color:#a7a49c;font-size:14px;line-height:1.7}.welcome-description strong{color:var(--paper);font-weight:500}.welcome-art{height:clamp(210px,26vw,330px);max-width:700px;position:relative;overflow:hidden;border:1px solid #ffffff48;background:#3a3530}.welcome-art>img{position:absolute;width:100%;height:100%;object-fit:cover;filter:saturate(.63) brightness(.68)}.welcome-art:after{position:absolute;content:'';inset:0;background:linear-gradient(90deg,#191a1830 25%,transparent 67%),linear-gradient(0deg,#131412ce,transparent 60%)}.art-stamp{position:absolute;top:17px;left:17px;z-index:1;color:var(--paper);line-height:1.6}.art-stamp span{color:var(--orange)}.art-caption{position:absolute;z-index:1;left:21px;bottom:20px;display:grid;gap:6px}.art-caption span{color:#d1bba6;font-size:8px}.art-caption b{font-family:var(--display);font-size:22px;letter-spacing:0}.record{position:absolute;z-index:1;width:clamp(175px,24vw,295px);aspect-ratio:1;border-radius:50%;right:clamp(8px,7vw,95px);top:50%;transform:translateY(-50%);background:repeating-radial-gradient(circle,#171716 0 2px,#292927 3px 4px,#191918 5px 7px);box-shadow:0 8px 28px #0808087a;animation:record-spin 13s linear infinite}.record-label{position:absolute;inset:36%;display:grid;place-content:center;border-radius:50%;background:var(--orange);font-family:var(--display);font-weight:900;font-size:24px;color:var(--ink);text-align:center}.record-label span{font-size:10px}.art-equalizer{position:absolute;z-index:1;right:15px;bottom:16px;display:flex;gap:3px;align-items:end;height:23px}.art-equalizer i{display:block;width:3px;background:var(--orange);animation:equalize .9s ease-in-out infinite alternate}.art-equalizer i:nth-child(3n){animation-delay:.25s}.art-equalizer i:nth-child(2n){animation-delay:.4s}.welcome-footnote{display:flex;justify-content:space-between;color:#77776e;font-size:8px;margin-top:12px}.welcome-footnote span:first-child{color:var(--orange)}.login-panel{align-self:center;border:1px solid #a39d8c80;background:#222320;box-shadow:8px 8px 0 #090a09;position:relative}.login-panel:before,.login-panel:after{content:'';position:absolute;width:6px;height:6px;border:1px solid #8b877e;border-radius:50%;left:12px;top:12px}.login-panel:after{left:auto;right:12px}.panel-top,.panel-bottom{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #ffffff20;color:#85847b;font-size:8px}.panel-top span:last-child{color:var(--green)}.login-inner{padding:28px 30px}.login-inner>.eyebrow{font-size:8px}.login-inner h2{font-family:var(--display);font-size:61px;line-height:.8;margin:14px 0 12px}.login-inner h2 span{color:var(--orange)}.login-intro{color:#a09d94;font-size:12px;line-height:1.6;margin:0 0 24px}.login-inner form{display:grid}.login-inner label,.create-modal label{display:flex;justify-content:space-between;margin:0 0 7px;color:#9b998f;font-family:var(--mono);font-size:8px}.optional{color:#64645d}.login-inner input,.create-modal input{height:42px;padding:0 11px;margin:0 0 17px;border:1px solid #53534b;background:#191a18;color:var(--paper);font-family:var(--mono);font-size:10px}.login-inner input::placeholder,.create-modal input::placeholder{color:#67675f}.login-inner form .switch-button{margin-top:3px}.login-inner>.switch-button{width:100%;margin-top:10px}.google-g{color:#87b6e0;font-family:var(--ui);font-weight:700;font-size:13px}.create-account{width:100%;margin-top:23px;padding:0;background:none;border:0;color:#949188;font-family:var(--mono);font-size:8px;text-align:left}.create-account strong{color:var(--orange);font-weight:500;margin-left:5px}.forgot{display:block;margin:14px 0 0 auto;border:0;background:none;color:#77766f;font-family:var(--mono);font-size:8px}.panel-bottom{border-top:1px solid #ffffff20;border-bottom:0;font-size:7px;padding:12px 17px}.panel-bottom span:last-child{color:var(--orange)}.welcome-marquee{height:37px;display:flex;overflow:hidden;border-top:1px solid #ffffff20;align-items:center;color:var(--orange);font-family:var(--display);font-size:18px;font-weight:700;white-space:nowrap;position:relative;z-index:1}.welcome-marquee span{flex-shrink:0;min-width:100%;animation:marquee 25s linear infinite}
+>>>>>>> 41b7cfc (Update SYNX music website)
 
 /* Main application frame */
 .dashboard{position:relative;z-index:1;min-height:100vh;padding-left:var(--sidebar-width);padding-right:var(--rail-width);padding-bottom:34px;background-color:rgba(241,238,230,0.82);backdrop-filter:blur(2px);background-image:radial-gradient(#8f897b20 .65px,transparent .65px);background-size:6px 6px}.sidebar{position:fixed;z-index:5;left:0;top:0;bottom:0;width:var(--sidebar-width);padding:25px 19px 17px;background:#1b1c19;color:var(--paper);display:flex;flex-direction:column}.sidebar-brand{font-size:39px;margin:3px 0 50px 5px}.side-section-label,.side-library-heading{display:flex;justify-content:space-between;color:#827f76;font-size:8px}.side-section-label span{color:#595951}.side-nav{display:grid;gap:3px;margin:12px 0 33px}.side-nav button{height:39px;display:flex;align-items:center;gap:12px;padding:0 9px;background:transparent;border:0;color:#a9a79e;text-align:left;font-size:11px}.side-nav button.active{background:#2b2c27;color:var(--paper);border-left:2px solid var(--orange)}.nav-icon{width:18px;color:#85847c;font-size:15px;text-align:center}.side-nav button.active .nav-icon{color:var(--orange)}.nav-count{margin-left:auto;color:var(--orange);font-family:var(--mono);font-size:9px}.side-library-heading{align-items:center;margin:0 2px 13px}.side-library-heading button{width:20px;height:20px;border:1px solid #56564f;background:transparent;color:var(--paper);font-size:15px}.side-library{height:34px;display:flex;align-items:center;gap:9px;padding:0 4px;border:0;background:none;color:#b9b6ad;text-align:left;font-size:10px}.side-library-mark{width:8px;height:8px;border:1px solid #ffffff75}.sidebar-spacer{flex:1}.sidebar-bottom{display:flex;align-items:center;gap:9px;padding-top:13px;border-top:1px solid #ffffff22}.avatar{display:grid;place-items:center;width:33px;height:33px;color:var(--ink);font-family:var(--display);font-size:15px;font-weight:800}.avatar-small{width:30px;height:30px;background:var(--orange)}.sidebar-user{display:grid;gap:4px}.sidebar-user strong{font-size:11px}.sidebar-user span{color:#77766f;font-size:7px}.more-button{margin-left:auto;padding:3px 7px;border:0;background:none;color:#aaa79f;font-size:20px}.mobile-header{display:none}.main-content{max-width:1020px;min-height:100vh;margin:0 auto;padding:0 34px 25px}.topbar{height:68px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--line)}.breadcrumb{display:flex;align-items:center;gap:10px;color:#807e76;font-size:8px;white-space:nowrap}.breadcrumb b{color:var(--orange)}.breadcrumb strong{color:var(--ink);font-weight:500}.search-box{width:min(280px,32%);height:32px;display:flex;align-items:center;gap:8px;margin-left:auto;padding:0 9px;border:1px solid #c6c2b7;background:#eeebe3;color:#7d7a72}.search-box>span{font-size:18px}.search-box input{width:100%;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-family:var(--mono);font-size:9px}.search-box input::placeholder{color:#8b8880}.search-box kbd{padding:3px 5px;border:1px solid #ccc8bc;color:#7e7c74;font-size:8px;white-space:nowrap}.notification-button,.top-avatar{position:relative;width:30px;height:30px;display:grid;place-items:center;border:0;background:none;font-size:17px}.notification-button i{position:absolute;top:5px;right:6px;width:5px;height:5px;background:var(--orange);border-radius:50%}.top-avatar,.mobile-avatar{background:#d7a078;color:var(--ink);font-family:var(--display);font-size:16px;font-weight:800}.home-hero{display:flex;justify-content:space-between;align-items:end;padding:48px 0 30px;border-bottom:1px solid var(--line)}.home-hero .eyebrow{font-size:8px}.eyebrow-divider{margin:0 4px;color:var(--orange)}.home-hero h1,.page-heading h1{margin:21px 0 11px;font-family:var(--display);font-size:clamp(57px,7vw,91px);font-weight:900;line-height:.79;letter-spacing:0}.home-hero h1 span,.page-heading h1 em{color:var(--orange);font-style:normal}.home-hero p,.page-heading p{margin:15px 0 0;color:#77766f;font-size:12px}.hero-index{padding:0 1px 4px;color:#76736b;font-family:var(--mono);font-size:8px;line-height:1.9;text-align:right}.hero-index span{color:var(--orange)}.describe-panel{margin-top:24px;padding:20px 21px 0;background:#e8e5dc;border:1px solid #c6c2b6;box-shadow:4px 4px 0 #d3cfc3;position:relative}.describe-panel:after{content:'✳';position:absolute;right:14px;top:53px;color:#d4cec1;font-size:40px;pointer-events:none}.describe-head{display:flex;align-items:center;justify-content:space-between}.describe-head h2,.section-title-row h2,.artist-strip-title h2{margin:7px 0 0;font-family:var(--display);font-size:32px;font-weight:800;line-height:1}.describe-head h2 em,.section-title-row h2 em,.artist-strip-title h2 em,.profile-module h2 em{color:var(--orange);font-style:normal}.system-stamp{padding-right:6px;color:#87847c;text-align:right;font-size:8px;line-height:1.65}.system-stamp i{color:var(--green);font-style:normal}.describe-panel textarea{position:relative;z-index:1;display:block;width:100%;min-height:82px;resize:vertical;margin:16px 0 11px;padding:12px;border:1px solid #c4c0b5;background:#f1eee6;color:#45433e;font-size:12px;line-height:1.7}.describe-panel textarea:focus{outline:1px solid var(--orange);outline-offset:0}.mood-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 0 13px}.mood-label{margin-right:5px;color:#88857d;font-size:8px}.mood-strip>button{padding:6px 7px;border:1px solid #c4c0b5;background:transparent;color:#58564f;font-size:9px}.mood-strip>button.chosen{border-color:var(--ink);background:var(--ink);color:var(--paper)}.mood-strip>button b{margin-left:6px;color:var(--orange);font-size:12px}.describe-bottom{display:flex;align-items:center;justify-content:space-between;margin:0 -21px;padding:11px 20px;border-top:1px solid #c6c2b6}.describe-bottom>span{color:#85827a;font-size:8px}.generate-button{min-width:174px;height:37px;font-size:9px}.identity-result{margin-top:29px;padding:0 0 22px;border-bottom:1px solid var(--line)}.identity-heading,.section-title-row{display:flex;align-items:end;justify-content:space-between}.identity-heading h2{margin:6px 0 0;font-family:var(--display);font-size:36px;line-height:.9}.match-note{color:#838077;font-size:8px}.identity-body{display:grid;grid-template-columns:1fr 1.08fr;gap:26px;margin-top:19px;padding:17px 19px;background:#20211e;color:var(--paper);position:relative;overflow:hidden}.identity-body:after{content:'S';position:absolute;right:6px;top:-40px;color:#ffffff07;font-family:var(--display);font-size:230px;font-weight:900;line-height:1;pointer-events:none}.identity-name,.genre-cloud{position:relative;z-index:1}.identity-name>span,.genre-label{color:#9c998f;font-family:var(--mono);font-size:8px}.identity-name h3{white-space:pre-line;margin:8px 0;font-family:var(--display);font-size:44px;line-height:.78;color:var(--orange)}.identity-name p{max-width:275px;color:#b9b5ab;font-size:10px;line-height:1.65}.identity-name .inline-link{margin-top:6px;color:#e0ddd4;font-size:8px}.genre-cloud{padding:8px 0}.genre-tags{display:flex;gap:6px;flex-wrap:wrap}.identity-body .genre-tags{margin:16px 0 22px}.genre-chip{padding:7px 9px;border:1px solid currentColor;font-family:var(--mono);font-size:8px;white-space:nowrap}.chip-orange{color:#ed835e;background:#f26a3d14}.chip-blue{color:#77b6c4;background:#77b6c414}.chip-green{color:#82a885;background:#82a88514}.chip-pink{color:#d68e97;background:#d68e9714}.chip-yellow{color:#dabb5e;background:#e4bf5314}.signal-bars{height:39px;display:flex;align-items:end;gap:3px}.signal-bars i{width:4px;background:#53544c}.signal-bars i.lit{background:var(--orange)}.signal-caption{display:flex;justify-content:space-between;margin-top:5px;color:#86847b;font-size:7px}.signal-caption b{color:var(--orange);font-weight:500}.content-section{margin-top:29px}.section-title-row h2{font-size:32px}.section-title-row>.inline-link{padding-bottom:3px;font-size:8px}.track-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.track-card{min-width:0}.cover-button{width:100%;aspect-ratio:1.18;position:relative;display:block;overflow:hidden;padding:0;border:0;background:#333}.cover-button:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#1313115c,transparent 60%)}.cover-button img{width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .4s,filter .4s}.cover-button:hover img{transform:scale(1.045);filter:saturate(1.1)}.cover-index{position:absolute;z-index:1;top:9px;left:10px;color:white;font-size:8px}.cover-play{position:absolute;z-index:1;right:10px;bottom:9px;display:grid;place-items:center;width:34px;height:34px;background:var(--orange);color:var(--ink);font-size:12px}.track-card-meta{display:flex;align-items:start;justify-content:space-between;padding-top:9px}.track-card-meta h3{margin:0;font-size:12px;font-weight:600}.track-card-meta p{margin:4px 0 0;color:#77766f;font-size:9px}.track-card-meta p span{color:var(--orange);padding:0 3px}.save-track{padding:0;border:0;background:none;color:#89867d;font-size:16px}.save-track.saved{color:var(--orange)}.track-card-foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:7px;border-top:1px solid var(--line);color:#88857d;font-size:7px}.library-preview{padding-bottom:19px}.library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.library-card{aspect-ratio:1.1;position:relative;display:block;overflow:hidden;padding:0;border:1px solid #242521;background:#252622;text-align:left;color:var(--paper)}.library-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.65) saturate(.7);transition:transform .35s}.library-card:hover>img{transform:scale(1.04)}.library-card:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#16171525,transparent 30%,#151613d9)}.library-card-number,.library-card-info,.library-card-arrow{position:absolute;z-index:1}.library-card-number{top:10px;left:10px;color:#e4dfd3;font-size:7px}.library-card-info{left:12px;right:30px;bottom:12px;display:grid;gap:5px}.library-card-info strong{font-family:var(--display);font-size:23px;line-height:.95}.library-card-info small{color:#c1beb4;font-size:7px}.library-card-arrow{right:11px;bottom:13px;color:var(--orange);font-size:14px}.page-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:36px;padding-top:12px;border-top:1px solid var(--line);color:#8b887f;font-size:7px}.page-footer i,.page-footer b{color:var(--orange);font-style:normal}.page-footer button{padding:0;border:0;background:none;color:#858178;font-family:var(--mono);font-size:7px}
@@ -2368,6 +3034,9 @@ watch(theme, (value) => {
 @media(max-width:680px){.discover-style-picker{grid-template-columns:1fr;gap:2px;margin:12px 0 10px;padding:11px 0}.discover-style-copy strong{font-size:22px}.discover-style-picker .option-wheel{max-width:none}}
 </style>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 41b7cfc (Update SYNX music website)
 
 <style>
 .player-seek{width:100%;height:12px;margin:8px 0 2px;accent-color:var(--orange);cursor:pointer}
@@ -2421,6 +3090,34 @@ watch(theme, (value) => {
 .track-card-foot{flex-wrap:wrap;row-gap:4px}
 .song-name .local-audio-chip{justify-self:start;margin-top:1px}
 .shared-track .local-audio-chip{display:inline-block;margin-top:5px}
+<<<<<<< HEAD
 </style>
 =======
 >>>>>>> 6f1a87c94fc18e050bde7a9d48453537672428c6
+=======
+.chat-error-state{align-self:center;margin:auto;padding:12px;border:1px solid #b65f37;color:#a64f3d;font-size:11px;line-height:1.5}
+.message-menu-toggle{width:25px;height:22px;margin-left:auto;padding:0;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:16px;line-height:1}
+.message-actions{align-items:center}
+.message-action-label{min-height:28px;padding:4px 8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:8px;white-space:nowrap}
+.message-action-label:hover,.message-menu-toggle:hover{border-color:var(--orange);color:var(--orange)}
+.message-action-label.unsend-button{color:#a64f3d}
+.dashboard[data-theme="dark"] .message-action-label{border-color:#4b4c45;background:#242520;color:#eee9df}
+.dashboard[data-theme="dark"] .message-action-label.unsend-button{color:#efaa91}
+.message-content{overflow-wrap:anywhere;white-space:pre-wrap}
+.reply-preview{min-width:0}
+.reply-jump-button{display:grid;width:100%;gap:4px;padding:7px 9px;border:0;border-left:2px solid var(--orange);background:rgba(242,106,61,.08);color:var(--ink);text-align:left}
+.reply-jump-button{cursor:pointer}
+.reply-jump-button:hover{background:rgba(242,106,61,.16)}
+.reply-jump-button span{color:var(--muted);font-family:var(--mono);font-size:8px}
+.reply-jump-button strong{overflow:hidden;font-size:10px;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
+.composer-reply{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.composer-reply>div{display:grid;min-width:0;gap:4px}
+.composer-reply strong{overflow:hidden;color:var(--muted);font-size:9px;font-weight:400;text-overflow:ellipsis;white-space:nowrap}
+.composer-row textarea{min-width:0;min-height:38px;max-height:120px;flex:1;resize:vertical;padding:10px 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:11px;line-height:1.4}
+.dashboard[data-theme="dark"] .composer-row textarea{border-color:#4b4c45;color:#eee9df}
+.chat-message.message-highlighted{position:relative;z-index:1;animation:chat-message-highlight 2.2s ease-out}
+@keyframes chat-message-highlight{0%,35%{outline:2px solid var(--orange);outline-offset:3px;background-color:rgba(242,106,61,.2)}100%{outline-color:transparent;background-color:transparent}}
+.dashboard[data-theme="dark"] .chat-error-state{color:#efaa91}
+@media(max-width:680px){.message-action-label{font-size:7px}.composer-row textarea{padding:9px;font-size:10px}}
+</style>
+>>>>>>> 41b7cfc (Update SYNX music website)

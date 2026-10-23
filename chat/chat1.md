@@ -32,3 +32,13 @@
 - Added logout from the footer, profile section, and account menus in the lower-left and top-right.
 - Logging out returns to the welcome/login screen without clearing saved music or libraries.
 - Chat controls wrap on narrow screens, and the dashboard content uses more width on wide displays.
+<<<<<<< HEAD
+=======
+
+## Direct-message history and reply navigation
+
+- Direct-message history is saved in browser local storage under a key scoped to the signed-in email. It survives refreshes and is synchronized between open tabs on the same browser origin using `BroadcastChannel`, the browser storage event, and a short polling fallback.
+- Reply records retain the original message ID and conversation handle. Selecting a reply preview scrolls to and briefly highlights the original message. If its original is deleted, the reply reference and preview are cleared, while the reply message remains.
+- Unsending removes the complete message record from the local conversation history. Any replies referencing it have their reference and preview cleared; reactions and shared-track data attached to the deleted message disappear with it.
+- Direct messages use browser local storage and synchronize across tabs at the same origin. This project has no direct-message database or authenticated messaging API: history is not shared across devices/browsers and is lost if browser storage is cleared. Demo account identity and ownership checks are client-controlled and are not a server-side security boundary. The separate listening-room server state is in-memory and is not used for direct messages.
+>>>>>>> 41b7cfc (Update SYNX music website)
