@@ -37,9 +37,13 @@ const activeView = ref('home')
 const theme = ref('light')
 const welcome = ref(true)
 const showCreateAccount = ref(false)
+const isGuest = ref(false)
+const showAccountPrompt = ref(false)
+const accountPromptReason = ref('')
 const spotifyConnected = ref(false)
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const loginError = ref('')
 const createAccountName = ref('')
 const createAccountEmail = ref('')
@@ -82,7 +86,7 @@ function loginWithValidatedAccount(targetEmail, targetPassword = '') {
     return false
   }
 
-  if (targetPassword && account.password && targetPassword !== account.password) {
+  if (account.password && targetPassword !== account.password) {
     loginError.value = 'That password does not match this account.'
     notify('That password does not match this account.')
     return false
@@ -172,8 +176,6 @@ function latestMessageTime(handle) {
   const thread = conversations.value[handle] || []
   return thread.at(-1)?.timestamp || 'NO MESSAGES'
 }
-const roomJoined = ref(false)
-const roomReaction = ref('')
 const showCreateLibrary = ref(false)
 const libraryName = ref('')
 const profileName = ref('THE NIGHT EXPLORER')
@@ -224,7 +226,7 @@ function notify(message) {
   toastTimer = setTimeout(() => { toast.value = '' }, 2400)
 }
 
-function enterApp(validateEmail = true) {
+function enterApp() {
   const trimmedEmail = email.value.trim()
 
   if (!trimmedEmail) {
@@ -233,33 +235,75 @@ function enterApp(validateEmail = true) {
     return
   }
 
-  if (validateEmail && !trimmedEmail.includes('@')) {
+  if (!trimmedEmail.includes('@')) {
     loginError.value = 'Add a valid email to continue'
     notify('Add a valid email to continue')
     return
   }
 
-  if (validateEmail) {
-    const trimmedPassword = password.value.trim()
-    if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
-      return
-    }
-
-    const matchedAccount = findAccountByEmail(trimmedEmail)
-    if (matchedAccount?.name) {
-      profileName.value = matchedAccount.name
-    }
+  const trimmedPassword = password.value.trim()
+  if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
+    return
   }
 
-  const derivedName = trimmedEmail.split('@')[0].replace(/[._-]+/g, ' ').trim()
-  if (derivedName) {
-    profileName.value = derivedName
-  }
+  const matchedAccount = findAccountByEmail(trimmedEmail)
+  profileName.value = matchedAccount?.name || trimmedEmail.split('@')[0].replace(/[._-]+/g, ' ').trim()
+  isGuest.value = false
+  showAccountPrompt.value = false
 
   loginError.value = ''
   welcome.value = false
   notify('Your sound is ready.')
 }
+
+function enterAsGuest() {
+  let guestName
+  try {
+    guestName = localStorage.getItem('synx-guest-name')
+    if (!guestName) {
+      guestName = `Guest ${Math.floor(1000 + Math.random() * 9000)}`
+      localStorage.setItem('synx-guest-name', guestName)
+    }
+  } catch {
+    guestName = `Guest ${Math.floor(1000 + Math.random() * 9000)}`
+  }
+  profileName.value = guestName
+  isGuest.value = true
+  showAccountPrompt.value = false
+  loginError.value = ''
+  welcome.value = false
+  notify('Welcome in. You are listening as a guest.')
+}
+
+function requireAccount(feature) {
+  if (!isGuest.value) return true
+  accountPromptReason.value = feature
+  showAccountPrompt.value = true
+  return false
+}
+
+function continueToAccount() {
+  showAccountPrompt.value = false
+  loginError.value = ''
+  showCreateAccount.value = false
+  welcome.value = true
+}
+
+const accountPromptTitle = computed(() => accountPromptReason.value === 'create_room'
+  ? 'Host your own room.'
+  : accountPromptReason.value === 'room_host_controls'
+    ? 'Take the controls.'
+    : accountPromptReason.value === 'profile_sharing'
+      ? 'Share your identity.'
+      : 'Keep your sound close.')
+
+const accountPromptDescription = computed(() => accountPromptReason.value === 'create_room'
+  ? 'Create a SYNX account to open a listening room. Guests can still join rooms and chat.'
+  : accountPromptReason.value === 'room_host_controls'
+    ? 'Sign in to use host and moderator controls. You can still listen and chat as a guest.'
+    : accountPromptReason.value === 'profile_sharing'
+      ? 'Sign in to share a profile that stays connected to your music identity.'
+      : 'Sign in to save tracks and build a personal archive that stays with your account.')
 
 function openCreateAccount() {
   loginError.value = ''
@@ -305,6 +349,8 @@ function submitCreateAccount() {
   email.value = emailAddress
   password.value = passwordValue
   profileName.value = name || 'THE NIGHT EXPLORER'
+  isGuest.value = false
+  showAccountPrompt.value = false
   loginError.value = ''
   showCreateAccount.value = false
   welcome.value = false
@@ -314,6 +360,8 @@ function submitCreateAccount() {
 function logout() {
   clearTimeout(toastTimer)
   welcome.value = true
+  isGuest.value = false
+  showAccountPrompt.value = false
   activeView.value = 'home'
   email.value = ''
   password.value = ''
@@ -359,13 +407,20 @@ function playTrack(track) {
 }
 
 function toggleSaved(track) {
+  if (!requireAccount('save_music')) return
   savedTracks.value = savedTracks.value.includes(track.id)
     ? savedTracks.value.filter((id) => id !== track.id)
     : [...savedTracks.value, track.id]
   notify(savedTracks.value.includes(track.id) ? 'Saved to your sound archive' : 'Removed from saved tracks')
 }
 
+function openCreateLibrary() {
+  if (!requireAccount('save_music')) return
+  showCreateLibrary.value = true
+}
+
 function createLibrary() {
+  if (!requireAccount('save_music')) return
   const title = libraryName.value.trim()
   if (!title) return notify('Give your new archive a name')
   libraries.value = [{ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true }, ...libraries.value]
@@ -585,6 +640,11 @@ async function copyShareLink() {
   } catch {
     notify('Your share card is ready to share')
   }
+
+  function shareIdentity() {
+    if (!requireAccount('profile_sharing')) return
+    notify('Identity card link copied')
+  }
 }
 
 function handleKeydown(event) {
@@ -645,7 +705,7 @@ watch(theme, (value) => {
         <a class="wordmark" href="#top" aria-label="SYNX home">SYNX<span class="wordmark-dot">.</span></a>
         <span class="micro-label">PERSONAL MUSIC IDENTITY ENGINE <i>//</i> EST. 2025</span>
         <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
-        <button class="text-button" @click="enterApp">ENTER AS GUEST <span>↗</span></button>
+        <button class="text-button" @click="enterAsGuest">ENTER AS GUEST <span>↗</span></button>
       </header>
       <div class="welcome-grid" id="top">
         <main class="welcome-copy">
@@ -679,7 +739,10 @@ watch(theme, (value) => {
               <label for="create-email">EMAIL ADDRESS</label>
               <input id="create-email" v-model="createAccountEmail" type="email" placeholder="you@somewhere.com" autocomplete="email" />
               <label for="create-password">PASSWORD</label>
-              <input id="create-password" v-model="createAccountPassword" type="password" placeholder="Create a password" autocomplete="new-password" />
+              <div class="password-input-wrap">
+                <input id="create-password" v-model="createAccountPassword" :type="showPassword ? 'text' : 'password'" placeholder="Create a password" autocomplete="new-password" />
+                <button class="password-visibility" type="button" :aria-label="showPassword ? 'Hide password' : 'View password'" :aria-pressed="showPassword" @click="showPassword = !showPassword">{{ showPassword ? 'HIDE' : 'VIEW' }}</button>
+              </div>
               <button type="button" class="switch-button switch-light spotify-connect" @click="connectSpotify">
                 <span class="spotify-mark">♪</span>
                 {{ spotifyConnected ? 'VS CODE SPOTIFY CONNECTED' : 'CONNECT VS CODE SPOTIFY' }}
@@ -692,15 +755,18 @@ watch(theme, (value) => {
             <p class="eyebrow">WELCOME TO YOUR FREQUENCY</p>
             <h2>COME ON<br>IN<span>.</span></h2>
             <p class="login-intro">A whole library, built around<br>the person you already are.</p>
-            <form @submit.prevent="enterApp(true)">
+            <form @submit.prevent="enterApp">
               <label for="email">EMAIL ADDRESS</label>
               <input id="email" v-model="email" type="email" placeholder="you@somewhere.com" autocomplete="email" />
               <label for="password">PASSWORD <span class="optional">OPTIONAL FOR DEMO</span></label>
-              <input id="password" v-model="password" type="password" placeholder="Anything works here" autocomplete="current-password" />
+              <div class="password-input-wrap">
+                <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Anything works here" autocomplete="current-password" />
+                <button class="password-visibility" type="button" :aria-label="showPassword ? 'Hide password' : 'View password'" :aria-pressed="showPassword" @click="showPassword = !showPassword">{{ showPassword ? 'HIDE' : 'VIEW' }}</button>
+              </div>
               <p v-if="loginError" class="login-error">{{ loginError }}</p>
               <button class="switch-button switch-orange" type="submit">LOG IN <span>↗</span></button>
             </form>
-            <button class="switch-button switch-light" @click="enterApp"><span class="google-g">G</span> CONTINUE WITH GOOGLE</button>
+            <button class="switch-button switch-light" type="button" @click="enterAsGuest"><span class="google-g">S</span> CONTINUE AS GUEST</button>
             <button class="create-account" @click="openCreateAccount">NEW AROUND HERE? <strong>CREATE ACCOUNT ↗</strong></button>
             <button class="forgot" @click="notify('Demo mode: no password needed.')">FORGOT PASSWORD?</button>
           </div>
@@ -719,17 +785,17 @@ watch(theme, (value) => {
             <span class="nav-icon">{{ item.icon }}</span><span>{{ item.label }}</span><span v-if="item.count" class="nav-count">{{ item.count }}</span>
           </button>
         </nav>
-        <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="showCreateLibrary = true">+</button></div>
+        <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="openCreateLibrary">+</button></div>
         <button v-for="library in libraries" :key="library.id" class="side-library" @click="activeView = 'library'">
           <span class="side-library-mark" :style="{ backgroundColor: library.color }"></span>{{ library.title }}
         </button>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom">
-          <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
+          <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>{{ isGuest ? 'GUEST SESSION' : 'FREE FREQUENCY' }}</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div>
         </div>
       </aside>
 
-      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">Z</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div></header>
+      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">Z</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div></header>
 
       <main class="main-content">
         <header class="topbar">
@@ -737,7 +803,7 @@ watch(theme, (value) => {
           <div class="search-box"><span>⌕</span><input v-model="search" placeholder="Search songs on Spotify..." aria-label="Search Spotify songs" @keydown.enter.prevent="searchSpotify()" /><button type="button" class="spotify-search-button" aria-label="Search songs on Spotify" @click="searchSpotify()">SEARCH</button></div>
           <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
           <button class="notification-button" aria-label="Notifications" @click="notify('You are all caught up.')">♧<i></i></button>
-          <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
+          <div class="account-menu-anchor"><button class="top-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'top'" @click="toggleAccountMenu('top')">Z</button><div v-if="accountMenu === 'top'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">{{ isGuest ? 'EXIT GUEST' : 'LOG OUT' }}</button></div></div>
         </header>
 
         <template v-if="spotifySearchQuery">
@@ -838,7 +904,7 @@ watch(theme, (value) => {
         </template>
 
         <template v-else-if="activeView === 'library'">
-          <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="showCreateLibrary = true">+ NEW ARCHIVE</button></section>
+          <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="openCreateLibrary">+ NEW ARCHIVE</button></section>
           <section class="content-section library-full-section">
             <div class="section-title-row"><div><span class="section-index">01 / PERSONAL ARCHIVE</span><h2>Libraries <em>({{ libraries.length }})</em></h2></div><div class="library-tabs"><button v-for="filter in ['All', 'Songs', 'Albums', 'Artists', 'Libraries', 'Offline']" :key="filter" :class="{ selected: libraryTab === filter }" @click="filter === 'Offline' ? activeView = 'offline' : libraryTab = filter">{{ filter.toUpperCase() }}</button></div></div>
             <div v-if="libraryTab === 'All' || libraryTab === 'Libraries'" class="library-grid library-full-grid">
@@ -939,23 +1005,12 @@ watch(theme, (value) => {
         </template>
 
         <template v-else-if="activeView === 'groups'">
-          <section class="page-heading"><span class="section-index">SYNX / 05</span><h1>LISTEN<br><em>IN GOOD COMPANY.</em></h1><p>One room. One queue. Everyone on the same wavelength.</p></section>
-          <section class="room-layout">
-            <div class="room-main">
-              <div class="room-kicker"><span class="live-dot"></span> SYNX LISTENING ROOM <span>//</span> ROOM 0042</div>
-              <FlipCard class="room-art-flipper" eyebrow="THE SHARED FREQUENCY" :title="currentTrack?.title || 'Space Song'" :subtitle="currentTrack?.artist || 'Beach House'" description="NOW PLAYING FOR THE ROOM" aria-label="Flip current listening-room artwork">
-                <div class="room-art"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="`Now playing ${currentTrack?.title}`" /><div class="room-art-overline">NOW PLAYING FOR THE ROOM</div><div class="room-art-title"><span>{{ currentTrack?.artist || 'Beach House' }}</span><h2>{{ currentTrack?.title || 'Space Song' }}</h2></div><div class="room-disc">S<span>✳</span></div></div>
-              </FlipCard>
-              <div class="room-track-info"><div><span class="section-index">THE SHARED FREQUENCY</span><h3>{{ currentTrack?.title }} <em>/ {{ currentTrack?.artist }}</em></h3></div><div class="room-reactions"><button v-for="reaction in ['🔥', '♡', '♫', '⚡', '✳']" :key="reaction" :class="{ reacted: roomReaction === reaction }" @click="roomReaction = reaction">{{ reaction }}</button></div></div>
-              <div class="room-controls"><button @click="notify('Previous track')">Ⅱ</button><button class="room-play" @click="playTrack(currentTrack)">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button @click="playTrack(tracks[(tracks.findIndex(track => track.id === currentTrack?.id) + 1) % tracks.length])">▶|</button><div class="room-progress"><span></span></div><span>2:14 / {{ currentTrack?.duration }}</span></div>
-            </div>
-            <aside class="room-aside"><div class="room-side-title"><span class="section-index">THE MIDNIGHT CREW</span><strong>06 LISTENING <i class="live-dot"></i></strong></div><div class="room-listeners"><div v-for="(friend, index) in chatFriends" :key="friend.handle" class="listener-row"><span class="avatar friend-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}</span><div><strong>{{ friend.name }}</strong><small>{{ index === 0 ? 'HOSTING THE ROOM' : 'ON THIS FREQUENCY' }}</small></div><span class="listener-wave">♫</span></div><div class="listener-placeholder">+ 3 MORE IN THE ROOM</div></div><div class="room-chat-label"><span class="section-index">ROOM CHAT</span><span>LIVE</span></div><div class="room-chat-message"><strong>mia.c</strong><p>this one feels like driving through a memory</p></div><div class="room-chat-message"><strong>jules</strong><p>exactly the right kind of ache ✳</p></div><button class="switch-button switch-orange room-join" @click="roomJoined = !roomJoined">{{ roomJoined ? '✓ YOU’RE IN THE ROOM' : 'JOIN THE LISTENING ROOM' }}</button></aside>
-          </section>
+          <ListeningRoom :profile-name="profileName" :is-guest="isGuest" @require-account="requireAccount" />
         </template>
 
         <template v-else-if="activeView === 'profile'">
-          <div class="profile-session-actions"><button type="button" class="profile-logout-button" @click="logout">LOG OUT ↗</button></div>
-          <section class="profile-hero"><div class="profile-cover"><img :src="imageUrl('photo-1519608487953-e999c86e7455', 1300)" alt="Twilight sky above a distant city" /><span>PERSONAL FREQUENCY ID // 0001</span></div><div class="profile-details"><div class="profile-avatar">{{ profileName.charAt(0).toUpperCase() || 'Z' }}<span>✳</span></div><div class="profile-title"><span class="section-index">@{{ profileHandle }} <i class="live-dot"></i> FREQUENCY ACTIVE</span><h1>{{ profileName }}<span class="orange-period">.</span></h1><p>A collector of late-night feelings, long drives, and songs that stay after the credits.</p></div><button class="switch-button switch-dark" @click="notify('Identity card link copied')">↗ SHARE MY IDENTITY</button></div></section>
+          <div class="profile-session-actions"><button type="button" class="profile-logout-button" @click="logout">{{ isGuest ? 'EXIT GUEST ↗' : 'LOG OUT ↗' }}</button></div>
+          <section class="profile-hero"><div class="profile-cover"><img :src="imageUrl('photo-1519608487953-e999c86e7455', 1300)" alt="Twilight sky above a distant city" /><span>{{ isGuest ? 'GUEST FREQUENCY · THIS BROWSER' : 'PERSONAL FREQUENCY ID // 0001' }}</span></div><div class="profile-details"><div class="profile-avatar">{{ profileName.charAt(0).toUpperCase() || 'Z' }}<span>✳</span></div><div class="profile-title"><span class="section-index">@{{ profileHandle }} <i class="live-dot"></i> {{ isGuest ? 'GUEST SESSION' : 'FREQUENCY ACTIVE' }}</span><h1>{{ profileName }}<span class="orange-period">.</span></h1><p>A collector of late-night feelings, long drives, and songs that stay after the credits.</p></div><button class="switch-button switch-dark" @click="shareIdentity">↗ SHARE MY IDENTITY</button></div></section>
           <section class="profile-grid">
             <FlipCard class="profile-flipper" eyebrow="01 / MY SOUND" title="Frequencies I return to" subtitle="YOUR SOUND PROFILE" description="Alternative · Indie · Electronic · Lo-Fi · Dream pop"><div class="profile-module"><span class="section-index">01 / MY SOUND</span><h2>THE FREQUENCIES<br>I RETURN TO.</h2><div class="genre-tags profile-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">INDIE</span><span class="genre-chip chip-green">ELECTRONIC</span><span class="genre-chip chip-pink">LO-FI</span><span class="genre-chip chip-yellow">DREAM POP</span></div></div></FlipCard>
             <FlipCard class="profile-flipper" eyebrow="02 / PERSONALITY IN WAVES" title="Your inner equalizer" subtitle="EMOTION 91 · NOSTALGIA 96" description="Energy 72 · Experiment 68 · Dance 43"><div class="profile-module"><span class="section-index">02 / PERSONALITY IN WAVES</span><h2>YOUR INNER<br>EQUALIZER.</h2><div class="personality-bars"><div v-for="(stat, index) in [{ name: 'ENERGY', value: 72 }, { name: 'EMOTION', value: 91 }, { name: 'EXPERIMENT', value: 68 }, { name: 'NOSTALGIA', value: 96 }, { name: 'DANCE', value: 43 }]" :key="stat.name"><span>{{ stat.name }}</span><i><b :style="{ width: `${stat.value}%`, backgroundColor: ['#f36b3e', '#70b9c6', '#78ad80', '#e58e9d', '#e8bf53'][index] }"></b></i><strong>{{ stat.value }}</strong></div></div></div></FlipCard>
@@ -968,7 +1023,7 @@ watch(theme, (value) => {
           <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ library.count }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
-        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">LOG OUT ↗</button></footer>
+        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">{{ isGuest ? 'EXIT GUEST ↗' : 'LOG OUT ↗' }}</button></footer>
       </main>
 
       <aside class="right-rail">
@@ -993,6 +1048,17 @@ watch(theme, (value) => {
       <div v-if="showDeleteConfirm" class="modal-backdrop chat-delete-backdrop" @click.self="showDeleteConfirm = false"><section class="create-modal chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><button type="button" class="modal-close" aria-label="Close" @click="showDeleteConfirm = false">×</button><span class="section-index">SYNX / CONVERSATION OPTIONS</span><h2 id="delete-chat-title">DELETE THIS<br><em>CONVERSATION?</em></h2><p>This clears the messages with {{ chatFriends[activeFriend].name }}.</p><div class="chat-delete-actions"><button type="button" @click="showDeleteConfirm = false">CANCEL</button><button type="button" @click="deleteConversation">DELETE</button></div></section></div>
       <Transition name="toast"><div v-if="toast" class="toast-message"><span>✳</span>{{ toast }}</div></Transition>
     </div>
+    <div v-if="showAccountPrompt" class="account-required-backdrop" @click.self="showAccountPrompt = false">
+      <section class="account-required-card" role="dialog" aria-modal="true" aria-labelledby="account-required-title">
+        <button type="button" class="account-required-close" aria-label="Close" @click="showAccountPrompt = false">×</button>
+        <span class="section-index">SYNX / YOUR NEXT FREQUENCY</span>
+        <h2 id="account-required-title">{{ accountPromptTitle }}</h2>
+        <p>{{ accountPromptDescription }}</p>
+        <button type="button" class="switch-button switch-orange" @click="continueToAccount">SIGN IN OR CREATE ACCOUNT <span>↗</span></button>
+        <button type="button" class="account-prompt-cancel" @click="showAccountPrompt = false">KEEP LISTENING AS A GUEST</button>
+        <small>Demo accounts are stored in this browser and are not secure production authentication.</small>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -1002,8 +1068,11 @@ watch(theme, (value) => {
 :root{--ink:#171714;--paper:#f1eee6;--paper-deep:#e8e4da;--orange:#f26a3d;--muted:#77766f;--line:#cbc7bc;--blue:#77b6c4;--green:#82a885;--pink:#d68e97;--yellow:#e4bf5b;--display:'Barlow Condensed',Impact,sans-serif;--ui:'DM Sans',Arial,sans-serif;--mono:'DM Mono',monospace;--sidebar-width:220px;--rail-width:280px}
 *{box-sizing:border-box}html{background:var(--paper);scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:13px;-webkit-font-smoothing:antialiased}button,input,textarea{font:inherit}button{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:3px}button{cursor:pointer}.app-shell{position:relative;min-height:100vh;isolation:isolate}.wordmark{color:var(--paper);font-family:var(--display);font-size:43px;font-weight:900;letter-spacing:0;line-height:.8;text-decoration:none}.wordmark-dot,.orange-period{color:var(--orange)}.micro-label,.eyebrow,.section-index,.system-stamp,.match-note,.side-section-label,.rail-title,.rail-section-label,.rail-subhead,.panel-top,.panel-bottom,.welcome-footnote,.art-stamp,.art-caption,.side-library-heading,.sidebar-user span,.breadcrumb,.search-box kbd,.mood-label,.describe-bottom>span,.track-card-foot,.cover-index,.genre-label,.signal-caption,.library-card-number,.library-card-info small,.song-genre,.song-mood,.song-duration,.friend-info small,.friend-presence,.chat-window-head>div span,.message-author,.chat-message time,.room-kicker,.room-side-title,.room-side-title strong,.listener-row div small,.listener-placeholder,.room-chat-label,.profile-cover>span,.personality-bars>div>span,.personality-bars>div>strong,.profile-library-row div span,.profile-moods,.offline-status,.storage-numbers,.offline-row div span,.offline-row>b,.offline-note,.page-footer,.inline-link,.rail-friend small,.rail-room-art>span,.rail-room>button,.rail-quote small,.song-row .song-duration{font-family:var(--mono);font-size:9px;letter-spacing:0;text-transform:uppercase}.eyebrow{display:flex;align-items:center;gap:8px;color:#a6a29a}.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 10px #f26a3d80}.section-index{color:#89867e}.inline-link{padding:0;border:0;background:none;color:var(--ink);font-weight:500}.inline-link span{color:var(--orange);margin-left:5px}.switch-button{height:44px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 15px;border:2px solid var(--ink);border-radius:0;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0;text-align:left;transition:transform .16s,box-shadow .16s}.switch-button:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--ink)}.switch-button:active{transform:translateY(1px);box-shadow:none}.switch-orange{background:var(--orange);color:var(--ink)}.switch-light{background:var(--paper);color:var(--ink)}.switch-dark{background:var(--ink);color:var(--paper)}
 
+/* Account prompt */
+.account-required-backdrop{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:20px;background:#11120fd9;backdrop-filter:blur(5px)}.account-required-card{position:relative;width:min(100%,430px);padding:30px;border:1px solid #67665d;background:#222320;color:var(--paper);box-shadow:7px 7px 0 #0b0c0b}.account-required-card>.section-index{color:#a6a29a}.account-required-card h2{margin:16px 0 9px;font-family:var(--display);font-size:clamp(37px,7vw,51px);line-height:.92}.account-required-card>p{margin:0 0 22px;color:#aaa79e;font-size:12px;line-height:1.7}.account-required-card>.switch-button{width:100%;border-color:var(--orange)}.account-required-close{position:absolute;top:11px;right:13px;border:0;background:none;color:#aaa79e;font-size:22px}.account-prompt-cancel{display:block;margin:16px auto 0;border:0;background:none;color:#aaa79e;font-family:var(--mono);font-size:8px}.account-required-card>small{display:block;margin-top:20px;padding-top:12px;border-top:1px solid #41423c;color:#88867e;font-size:9px;line-height:1.6}
 /* Welcome / login */
 .welcome-screen{position:relative;min-height:100vh;overflow:hidden;background:rgba(25,26,24,0.68);backdrop-filter:blur(3px);color:var(--paper);padding:0 6.1vw;z-index:1}.welcome-grain{position:absolute;inset:0;pointer-events:none;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E")}.welcome-topline{height:85px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff25;position:relative;z-index:1}.micro-label{color:#87877f}.micro-label i{color:var(--orange);font-style:normal;margin:0 8px}.text-button{padding:9px 0;border:0;background:none;color:var(--paper);font-family:var(--mono);font-size:9px}.text-button span{color:var(--orange);margin-left:8px}.welcome-grid{max-width:1370px;margin:auto;min-height:calc(100vh - 150px);display:grid;grid-template-columns:minmax(0,1.48fr) minmax(310px,.76fr);gap:8.5%;align-items:center;padding:55px 0 47px;position:relative;z-index:1}.welcome-copy{padding:0 0 16px}.welcome-copy .eyebrow{margin:0 0 16px}.fuzzy-eyebrow{display:flex;align-items:center;gap:8px;white-space:nowrap;margin:0 0 16px}.fuzzy-tagline{display:block;max-width:100%}.fuzzy-headline{display:grid;gap:0.2em;margin:0}.fuzzy-title-line{display:block;max-width:100%;height:auto;overflow:visible}.welcome-copy h1{margin:0;font-family:var(--display);font-size:clamp(74px,10.7vw,154px);font-weight:900;line-height:.77;letter-spacing:0}.welcome-copy h1>span:first-child{color:var(--orange)}.welcome-copy h1 .orange-period{color:var(--orange)}.welcome-description{margin:22px 0 25px;color:#a7a49c;font-size:14px;line-height:1.7}.welcome-description strong{color:var(--paper);font-weight:500}.welcome-art{height:clamp(210px,26vw,330px);max-width:700px;position:relative;overflow:hidden;border:1px solid #ffffff48;background:#3a3530}.welcome-art>img{position:absolute;width:100%;height:100%;object-fit:cover;filter:saturate(.63) brightness(.68)}.welcome-art:after{position:absolute;content:'';inset:0;background:linear-gradient(90deg,#191a1830 25%,transparent 67%),linear-gradient(0deg,#131412ce,transparent 60%)}.art-stamp{position:absolute;top:17px;left:17px;z-index:1;color:var(--paper);line-height:1.6}.art-stamp span{color:var(--orange)}.art-caption{position:absolute;z-index:1;left:21px;bottom:20px;display:grid;gap:6px}.art-caption span{color:#d1bba6;font-size:8px}.art-caption b{font-family:var(--display);font-size:22px;letter-spacing:0}.record{position:absolute;z-index:1;width:clamp(175px,24vw,295px);aspect-ratio:1;border-radius:50%;right:clamp(8px,7vw,95px);top:50%;transform:translateY(-50%);background:repeating-radial-gradient(circle,#171716 0 2px,#292927 3px 4px,#191918 5px 7px);box-shadow:0 8px 28px #0808087a;animation:record-spin 13s linear infinite}.record-label{position:absolute;inset:36%;display:grid;place-content:center;border-radius:50%;background:var(--orange);font-family:var(--display);font-weight:900;font-size:24px;color:var(--ink);text-align:center}.record-label span{font-size:10px}.art-equalizer{position:absolute;z-index:1;right:15px;bottom:16px;display:flex;gap:3px;align-items:end;height:23px}.art-equalizer i{display:block;width:3px;background:var(--orange);animation:equalize .9s ease-in-out infinite alternate}.art-equalizer i:nth-child(3n){animation-delay:.25s}.art-equalizer i:nth-child(2n){animation-delay:.4s}.welcome-footnote{display:flex;justify-content:space-between;color:#77776e;font-size:8px;margin-top:12px}.welcome-footnote span:first-child{color:var(--orange)}.login-panel{align-self:center;border:1px solid #a39d8c80;background:#222320;box-shadow:8px 8px 0 #090a09;position:relative}.login-panel:before,.login-panel:after{content:'';position:absolute;width:6px;height:6px;border:1px solid #8b877e;border-radius:50%;left:12px;top:12px}.login-panel:after{left:auto;right:12px}.panel-top,.panel-bottom{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #ffffff20;color:#85847b;font-size:8px}.panel-top span:last-child{color:var(--green)}.login-inner{padding:28px 30px}.login-inner>.eyebrow{font-size:8px}.login-inner h2{font-family:var(--display);font-size:61px;line-height:.8;margin:14px 0 12px}.login-inner h2 span{color:var(--orange)}.login-intro{color:#a09d94;font-size:12px;line-height:1.6;margin:0 0 24px}.login-inner form{display:grid}.login-inner label,.create-modal label{display:flex;justify-content:space-between;margin:0 0 7px;color:#9b998f;font-family:var(--mono);font-size:8px}.optional{color:#64645d}.login-inner input,.create-modal input{height:42px;padding:0 11px;margin:0 0 17px;border:1px solid #53534b;background:#191a18;color:var(--paper);font-family:var(--mono);font-size:10px}.login-inner input::placeholder,.create-modal input::placeholder{color:#67675f}.login-inner form .switch-button{margin-top:3px}.login-inner>.switch-button{width:100%;margin-top:10px}.google-g{color:#87b6e0;font-family:var(--ui);font-weight:700;font-size:13px}.create-account{width:100%;margin-top:23px;padding:0;background:none;border:0;color:#949188;font-family:var(--mono);font-size:8px;text-align:left}.create-account strong{color:var(--orange);font-weight:500;margin-left:5px}.forgot{display:block;margin:14px 0 0 auto;border:0;background:none;color:#77766f;font-family:var(--mono);font-size:8px}.panel-bottom{border-top:1px solid #ffffff20;border-bottom:0;font-size:7px;padding:12px 17px}.panel-bottom span:last-child{color:var(--orange)}.welcome-marquee{height:37px;display:flex;overflow:hidden;border-top:1px solid #ffffff20;align-items:center;color:var(--orange);font-family:var(--display);font-size:18px;font-weight:700;white-space:nowrap;position:relative;z-index:1}.welcome-marquee span{flex-shrink:0;min-width:100%;animation:marquee 25s linear infinite}
+.password-input-wrap{position:relative;margin:0 0 17px}.login-inner .password-input-wrap input{width:100%;margin:0;padding-right:58px}.password-visibility{position:absolute;top:50%;right:10px;transform:translateY(-50%);padding:6px 0;border:0;background:transparent;color:var(--orange);font-family:var(--mono);font-size:8px;font-weight:500;letter-spacing:.04em}.password-visibility:hover{color:var(--paper)}.password-visibility:focus-visible{outline:1px solid var(--orange);outline-offset:3px}
 
 /* Main application frame */
 .dashboard{position:relative;z-index:1;min-height:100vh;padding-left:var(--sidebar-width);padding-right:var(--rail-width);padding-bottom:34px;background-color:rgba(241,238,230,0.82);backdrop-filter:blur(2px);background-image:radial-gradient(#8f897b20 .65px,transparent .65px);background-size:6px 6px}.sidebar{position:fixed;z-index:5;left:0;top:0;bottom:0;width:var(--sidebar-width);padding:25px 19px 17px;background:#1b1c19;color:var(--paper);display:flex;flex-direction:column}.sidebar-brand{font-size:39px;margin:3px 0 50px 5px}.side-section-label,.side-library-heading{display:flex;justify-content:space-between;color:#827f76;font-size:8px}.side-section-label span{color:#595951}.side-nav{display:grid;gap:3px;margin:12px 0 33px}.side-nav button{height:39px;display:flex;align-items:center;gap:12px;padding:0 9px;background:transparent;border:0;color:#a9a79e;text-align:left;font-size:11px}.side-nav button.active{background:#2b2c27;color:var(--paper);border-left:2px solid var(--orange)}.nav-icon{width:18px;color:#85847c;font-size:15px;text-align:center}.side-nav button.active .nav-icon{color:var(--orange)}.nav-count{margin-left:auto;color:var(--orange);font-family:var(--mono);font-size:9px}.side-library-heading{align-items:center;margin:0 2px 13px}.side-library-heading button{width:20px;height:20px;border:1px solid #56564f;background:transparent;color:var(--paper);font-size:15px}.side-library{height:34px;display:flex;align-items:center;gap:9px;padding:0 4px;border:0;background:none;color:#b9b6ad;text-align:left;font-size:10px}.side-library-mark{width:8px;height:8px;border:1px solid #ffffff75}.sidebar-spacer{flex:1}.sidebar-bottom{display:flex;align-items:center;gap:9px;padding-top:13px;border-top:1px solid #ffffff22}.avatar{display:grid;place-items:center;width:33px;height:33px;color:var(--ink);font-family:var(--display);font-size:15px;font-weight:800}.avatar-small{width:30px;height:30px;background:var(--orange)}.sidebar-user{display:grid;gap:4px}.sidebar-user strong{font-size:11px}.sidebar-user span{color:#77766f;font-size:7px}.more-button{margin-left:auto;padding:3px 7px;border:0;background:none;color:#aaa79f;font-size:20px}.mobile-header{display:none}.main-content{max-width:1020px;min-height:100vh;margin:0 auto;padding:0 34px 25px}.topbar{height:68px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--line)}.breadcrumb{display:flex;align-items:center;gap:10px;color:#807e76;font-size:8px;white-space:nowrap}.breadcrumb b{color:var(--orange)}.breadcrumb strong{color:var(--ink);font-weight:500}.search-box{width:min(280px,32%);height:32px;display:flex;align-items:center;gap:8px;margin-left:auto;padding:0 9px;border:1px solid #c6c2b7;background:#eeebe3;color:#7d7a72}.search-box>span{font-size:18px}.search-box input{width:100%;min-width:0;border:0;outline:none;background:transparent;color:var(--ink);font-family:var(--mono);font-size:9px}.search-box input::placeholder{color:#8b8880}.search-box kbd{padding:3px 5px;border:1px solid #ccc8bc;color:#7e7c74;font-size:8px;white-space:nowrap}.notification-button,.top-avatar{position:relative;width:30px;height:30px;display:grid;place-items:center;border:0;background:none;font-size:17px}.notification-button i{position:absolute;top:5px;right:6px;width:5px;height:5px;background:var(--orange);border-radius:50%}.top-avatar,.mobile-avatar{background:#d7a078;color:var(--ink);font-family:var(--display);font-size:16px;font-weight:800}.home-hero{display:flex;justify-content:space-between;align-items:end;padding:48px 0 30px;border-bottom:1px solid var(--line)}.home-hero .eyebrow{font-size:8px}.eyebrow-divider{margin:0 4px;color:var(--orange)}.home-hero h1,.page-heading h1{margin:21px 0 11px;font-family:var(--display);font-size:clamp(57px,7vw,91px);font-weight:900;line-height:.79;letter-spacing:0}.home-hero h1 span,.page-heading h1 em{color:var(--orange);font-style:normal}.home-hero p,.page-heading p{margin:15px 0 0;color:#77766f;font-size:12px}.hero-index{padding:0 1px 4px;color:#76736b;font-family:var(--mono);font-size:8px;line-height:1.9;text-align:right}.hero-index span{color:var(--orange)}.describe-panel{margin-top:24px;padding:20px 21px 0;background:#e8e5dc;border:1px solid #c6c2b6;box-shadow:4px 4px 0 #d3cfc3;position:relative}.describe-panel:after{content:'✳';position:absolute;right:14px;top:53px;color:#d4cec1;font-size:40px;pointer-events:none}.describe-head{display:flex;align-items:center;justify-content:space-between}.describe-head h2,.section-title-row h2,.artist-strip-title h2{margin:7px 0 0;font-family:var(--display);font-size:32px;font-weight:800;line-height:1}.describe-head h2 em,.section-title-row h2 em,.artist-strip-title h2 em,.profile-module h2 em{color:var(--orange);font-style:normal}.system-stamp{padding-right:6px;color:#87847c;text-align:right;font-size:8px;line-height:1.65}.system-stamp i{color:var(--green);font-style:normal}.describe-panel textarea{position:relative;z-index:1;display:block;width:100%;min-height:82px;resize:vertical;margin:16px 0 11px;padding:12px;border:1px solid #c4c0b5;background:#f1eee6;color:#45433e;font-size:12px;line-height:1.7}.describe-panel textarea:focus{outline:1px solid var(--orange);outline-offset:0}.mood-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 0 13px}.mood-label{margin-right:5px;color:#88857d;font-size:8px}.mood-strip>button{padding:6px 7px;border:1px solid #c4c0b5;background:transparent;color:#58564f;font-size:9px}.mood-strip>button.chosen{border-color:var(--ink);background:var(--ink);color:var(--paper)}.mood-strip>button b{margin-left:6px;color:var(--orange);font-size:12px}.describe-bottom{display:flex;align-items:center;justify-content:space-between;margin:0 -21px;padding:11px 20px;border-top:1px solid #c6c2b6}.describe-bottom>span{color:#85827a;font-size:8px}.generate-button{min-width:174px;height:37px;font-size:9px}.identity-result{margin-top:29px;padding:0 0 22px;border-bottom:1px solid var(--line)}.identity-heading,.section-title-row{display:flex;align-items:end;justify-content:space-between}.identity-heading h2{margin:6px 0 0;font-family:var(--display);font-size:36px;line-height:.9}.match-note{color:#838077;font-size:8px}.identity-body{display:grid;grid-template-columns:1fr 1.08fr;gap:26px;margin-top:19px;padding:17px 19px;background:#20211e;color:var(--paper);position:relative;overflow:hidden}.identity-body:after{content:'S';position:absolute;right:6px;top:-40px;color:#ffffff07;font-family:var(--display);font-size:230px;font-weight:900;line-height:1;pointer-events:none}.identity-name,.genre-cloud{position:relative;z-index:1}.identity-name>span,.genre-label{color:#9c998f;font-family:var(--mono);font-size:8px}.identity-name h3{white-space:pre-line;margin:8px 0;font-family:var(--display);font-size:44px;line-height:.78;color:var(--orange)}.identity-name p{max-width:275px;color:#b9b5ab;font-size:10px;line-height:1.65}.identity-name .inline-link{margin-top:6px;color:#e0ddd4;font-size:8px}.genre-cloud{padding:8px 0}.genre-tags{display:flex;gap:6px;flex-wrap:wrap}.identity-body .genre-tags{margin:16px 0 22px}.genre-chip{padding:7px 9px;border:1px solid currentColor;font-family:var(--mono);font-size:8px;white-space:nowrap}.chip-orange{color:#ed835e;background:#f26a3d14}.chip-blue{color:#77b6c4;background:#77b6c414}.chip-green{color:#82a885;background:#82a88514}.chip-pink{color:#d68e97;background:#d68e9714}.chip-yellow{color:#dabb5e;background:#e4bf5314}.signal-bars{height:39px;display:flex;align-items:end;gap:3px}.signal-bars i{width:4px;background:#53544c}.signal-bars i.lit{background:var(--orange)}.signal-caption{display:flex;justify-content:space-between;margin-top:5px;color:#86847b;font-size:7px}.signal-caption b{color:var(--orange);font-weight:500}.content-section{margin-top:29px}.section-title-row h2{font-size:32px}.section-title-row>.inline-link{padding-bottom:3px;font-size:8px}.track-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.track-card{min-width:0}.cover-button{width:100%;aspect-ratio:1.18;position:relative;display:block;overflow:hidden;padding:0;border:0;background:#333}.cover-button:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#1313115c,transparent 60%)}.cover-button img{width:100%;height:100%;object-fit:cover;filter:saturate(.8);transition:transform .4s,filter .4s}.cover-button:hover img{transform:scale(1.045);filter:saturate(1.1)}.cover-index{position:absolute;z-index:1;top:9px;left:10px;color:white;font-size:8px}.cover-play{position:absolute;z-index:1;right:10px;bottom:9px;display:grid;place-items:center;width:34px;height:34px;background:var(--orange);color:var(--ink);font-size:12px}.track-card-meta{display:flex;align-items:start;justify-content:space-between;padding-top:9px}.track-card-meta h3{margin:0;font-size:12px;font-weight:600}.track-card-meta p{margin:4px 0 0;color:#77766f;font-size:9px}.track-card-meta p span{color:var(--orange);padding:0 3px}.save-track{padding:0;border:0;background:none;color:#89867d;font-size:16px}.save-track.saved{color:var(--orange)}.track-card-foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:7px;border-top:1px solid var(--line);color:#88857d;font-size:7px}.library-preview{padding-bottom:19px}.library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.library-card{aspect-ratio:1.1;position:relative;display:block;overflow:hidden;padding:0;border:1px solid #242521;background:#252622;text-align:left;color:var(--paper)}.library-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.65) saturate(.7);transition:transform .35s}.library-card:hover>img{transform:scale(1.04)}.library-card:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#16171525,transparent 30%,#151613d9)}.library-card-number,.library-card-info,.library-card-arrow{position:absolute;z-index:1}.library-card-number{top:10px;left:10px;color:#e4dfd3;font-size:7px}.library-card-info{left:12px;right:30px;bottom:12px;display:grid;gap:5px}.library-card-info strong{font-family:var(--display);font-size:23px;line-height:.95}.library-card-info small{color:#c1beb4;font-size:7px}.library-card-arrow{right:11px;bottom:13px;color:var(--orange);font-size:14px}.page-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:36px;padding-top:12px;border-top:1px solid var(--line);color:#8b887f;font-size:7px}.page-footer i,.page-footer b{color:var(--orange);font-style:normal}.page-footer button{padding:0;border:0;background:none;color:#858178;font-family:var(--mono);font-size:7px}
