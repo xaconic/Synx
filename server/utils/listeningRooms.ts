@@ -1,4 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto'
+import { normalizeLocalMusicPath } from '#shared/song-audio'
+import { validateMusicFile } from './music-files'
 
 type Track = {
   id: string
@@ -6,6 +8,7 @@ type Track = {
   artist: string
   cover: string
   durationMs: number
+  audioUrl?: string
 }
 
 type Member = {
@@ -55,12 +58,24 @@ const rooms = new Map<string, Room>()
 const reactions = ['❤️', '🔥', '🎵', '😂', '👀']
 
 function makeTrack(track: Partial<Track> & Pick<Track, 'title' | 'artist'>): Track {
+  const audioUrl = track.audioUrl ? normalizeLocalMusicPath(track.audioUrl) : null
+  if (track.audioUrl && !audioUrl) {
+    throw createError({ statusCode: 400, statusMessage: 'Choose a valid local SYNX audio file.' })
+  }
+  if (audioUrl) {
+    const filename = audioUrl.slice('/music/'.length)
+    if (validateMusicFile(filename).status !== 'available') {
+      throw createError({ statusCode: 400, statusMessage: 'That SYNX audio file is not available for playback.' })
+    }
+  }
+
   return {
     id: track.id || randomUUID(),
     title: track.title.trim().slice(0, 120),
     artist: track.artist.trim().slice(0, 120),
     cover: track.cover || '',
     durationMs: Math.min(Math.max(Number(track.durationMs) || 210_000, 1_000), 3_600_000),
+    ...(audioUrl ? { audioUrl } : {}),
   }
 }
 
@@ -82,11 +97,12 @@ function seedRoom() {
     hostId,
     members: [{ id: hostId, name: 'Mia', role: 'host', joinedAt: now - 60_000, lastSeen: now - 60_000 }],
     currentTrack: makeTrack({
-      id: 'space-song',
-      title: 'Space Song',
-      artist: 'Beach House',
-      cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/e0/d5/09e0d559-0682-f0f0-5e0c-3cd11e3114fd/beachhouse_depressioncherry_2400_300.jpg/600x600bb.jpg',
-      durationMs: 320_000,
+      id: 'synx-1',
+      title: 'The Night We Met',
+      artist: 'Lord Huron',
+      cover: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=600&q=85',
+      durationMs: 208_000,
+      audioUrl: '/music/the-night-we-met.mp3',
     }),
     queue: [],
     previousTracks: [],
@@ -170,11 +186,12 @@ function createRoom(memberId: string, memberName: string, name: string, isPrivat
     hostId: memberId,
     members: [{ id: memberId, name: memberName.trim().slice(0, 40) || 'Listener', role: 'host', joinedAt: now, lastSeen: now }],
     currentTrack: makeTrack({
-      id: 'space-song',
-      title: 'Space Song',
-      artist: 'Beach House',
-      cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/09/e0/d5/09e0d559-0682-f0f0-5e0c-3cd11e3114fd/beachhouse_depressioncherry_2400_300.jpg/600x600bb.jpg',
-      durationMs: 320_000,
+      id: 'synx-1',
+      title: 'The Night We Met',
+      artist: 'Lord Huron',
+      cover: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=600&q=85',
+      durationMs: 208_000,
+      audioUrl: '/music/the-night-we-met.mp3',
     }),
     queue: [],
     previousTracks: [],
@@ -276,6 +293,7 @@ function updatePlayback(code: string, memberId: string, action: string, value?: 
       artist: queued.artist,
       cover: queued.cover,
       durationMs: queued.durationMs,
+      ...(queued.audioUrl ? { audioUrl: queued.audioUrl } : {}),
     }
     room.playback.positionMs = 0
     room.playback.playing = true
@@ -288,7 +306,7 @@ function updatePlayback(code: string, memberId: string, action: string, value?: 
       if (!room.queue.length) throw createError({ statusCode: 409, statusMessage: 'The queue is empty. Add a song before pressing play.' })
       nextTrack()
     } else if (!room.playback.playing) {
-      room.playback.positionMs = previousPosition
+      room.playback.positionMs = previousPosition >= (room.currentTrack.durationMs || 0) ? 0 : previousPosition
       room.playback.playing = true
       room.playback.startedAt = now
     }
@@ -324,6 +342,14 @@ function updatePlayback(code: string, memberId: string, action: string, value?: 
     const volume = Number(value)
     if (!Number.isFinite(volume)) throw createError({ statusCode: 400, statusMessage: 'Choose a valid volume.' })
     room.playback.volume = Math.min(100, Math.max(0, volume))
+  } else if (action === 'duration') {
+    const duration = Number(value)
+    if (!room.currentTrack?.audioUrl || !Number.isFinite(duration) || duration < 1_000) {
+      throw createError({ statusCode: 400, statusMessage: 'Choose a valid duration for the current local audio track.' })
+    }
+    room.currentTrack.durationMs = Math.min(3_600_000, Math.round(duration))
+    room.playback.positionMs = Math.min(previousPosition, room.currentTrack.durationMs)
+    room.playback.startedAt = room.playback.playing ? now : null
   } else {
     throw createError({ statusCode: 404, statusMessage: 'That playback action is not supported.' })
   }
@@ -337,6 +363,9 @@ function addQueueItem(code: string, memberId: string, payload: Record<string, un
   const title = typeof payload.title === 'string' ? payload.title.trim() : ''
   const artist = typeof payload.artist === 'string' ? payload.artist.trim() : ''
   if (!title || !artist) throw createError({ statusCode: 400, statusMessage: 'Choose a song with a title and artist.' })
+  if (typeof payload.audioUrl !== 'string' || !payload.audioUrl) {
+    throw createError({ statusCode: 400, statusMessage: 'Choose a song with verified local audio before adding it to the room.' })
+  }
   if (room.queue.length >= 100) throw createError({ statusCode: 409, statusMessage: 'The room queue is full.' })
   const requestId = typeof payload.requestId === 'string' ? payload.requestId : undefined
   if (requestId && room.queue.some((item) => item.requestId === requestId)) return snapshot(room)
@@ -346,6 +375,7 @@ function addQueueItem(code: string, memberId: string, payload: Record<string, un
     artist,
     cover: typeof payload.cover === 'string' ? payload.cover : '',
     durationMs: Number(payload.durationMs),
+    audioUrl: typeof payload.audioUrl === 'string' ? payload.audioUrl : undefined,
   })
   if (room.queue.some((item) => item.id === track.id) || room.currentTrack?.id === track.id) {
     throw createError({ statusCode: 409, statusMessage: 'That track is already in the room.' })

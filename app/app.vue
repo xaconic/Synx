@@ -8,6 +8,7 @@ import OptionWheel from '~/components/OptionWheel.vue'
 import WakeSlider from '~/components/WakeSlider.vue'
 import FuzzyText from '~/components/FuzzyText.vue'
 import LocalAudioChip from '~/components/LocalAudioChip.vue'
+import ListeningRoom from '~/components/ListeningRoom.vue'
 
 const navigation = [
   { id: 'home', label: 'Home', icon: '⌂' },
@@ -58,6 +59,7 @@ const activeView = ref('home')
 const theme = ref('light')
 const welcome = ref(true)
 const showCreateAccount = ref(false)
+const isGuest = ref(false)
 const spotifyConnected = ref(false)
 const email = ref('')
 const password = ref('')
@@ -396,8 +398,6 @@ function latestMessageTime(handle) {
   const thread = conversations.value[handle] || []
   return thread.at(-1)?.timestamp || 'NO MESSAGES'
 }
-const roomJoined = ref(false)
-const roomReaction = ref('')
 const showCreateLibrary = ref(false)
 const libraryName = ref('')
 const profileName = ref('THE NIGHT EXPLORER')
@@ -564,6 +564,20 @@ const recommendedLibraries = computed(() => libraries.value
   .filter((item) => item.members.length && (item.matchingMembers.length || item.metadataMatches)))
 
 const imageUrl = (photo, width = 640) => photo?.startsWith('https://') ? photo : `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=${width}&q=85`
+const listeningRoomTracks = computed(() => tracks.map((track) => {
+  const [minutes, seconds] = track.duration.split(':').map(Number)
+  return {
+    id: `synx-${track.id}`,
+    title: track.title,
+    artist: track.artist,
+    cover: imageUrl(track.cover, 300),
+    duration: track.duration,
+    durationMs: (minutes * 60 + seconds) * 1000,
+    genre: track.genre,
+    mood: track.mood,
+    audioUrl: hasVerifiedLocalAudio(track) ? track.audioUrl : '',
+  }
+}))
 
 let toastTimer
 function notify(message) {
@@ -575,38 +589,70 @@ function notify(message) {
 function enterApp(validateEmail = true) {
   const trimmedEmail = email.value.trim()
 
-  if (!trimmedEmail) {
-    loginError.value = 'You need to log in first.'
-    notify('You need to log in first.')
-    return
-  }
-
-  if (validateEmail && !trimmedEmail.includes('@')) {
-    loginError.value = 'Add a valid email to continue'
-    notify('Add a valid email to continue')
-    return
-  }
-
   if (validateEmail) {
+    if (!trimmedEmail) {
+      loginError.value = 'Enter your email to log in, or choose guest access.'
+      notify('Enter your email to log in, or choose guest access.')
+      return
+    }
+
+    if (!trimmedEmail.includes('@')) {
+      loginError.value = 'Add a valid email to continue'
+      notify('Add a valid email to continue')
+      return
+    }
+
     const trimmedPassword = password.value.trim()
     if (!loginWithValidatedAccount(trimmedEmail, trimmedPassword)) {
       return
     }
 
     const matchedAccount = findAccountByEmail(trimmedEmail)
-    if (matchedAccount?.name) {
-      profileName.value = matchedAccount.name
-    }
-  }
-
-  const derivedName = trimmedEmail.split('@')[0].replace(/[._-]+/g, ' ').trim()
-  if (derivedName) {
-    profileName.value = derivedName
+    profileName.value = matchedAccount?.name || trimmedEmail.split('@')[0].replace(/[._-]+/g, ' ').trim()
+    isGuest.value = false
+  } else {
+    profileName.value = 'Guest listener'
+    isGuest.value = true
   }
 
   loginError.value = ''
   welcome.value = false
-  notify('Your sound is ready.')
+  notify(validateEmail ? 'Your sound is ready.' : 'You’re in as a guest. Enjoy discovering SYNX.')
+}
+
+function requireAccount(action) {
+  if (!isGuest.value) return false
+  showCreateAccount.value = false
+  showCreateLibrary.value = false
+  loginError.value = `Log in or create an account to ${action}.`
+  welcome.value = true
+  return true
+}
+
+function handleRoomAccountRequired(action) {
+  const actions = {
+    create_room: 'create a listening room',
+    room_host_controls: 'use room host and moderator controls',
+  }
+  requireAccount(actions[action] || 'use this listening room feature')
+}
+
+function openAccountAccess() {
+  if (isGuest.value) {
+    requireAccount('use your personal account features')
+    return
+  }
+  logout()
+}
+
+function openCreateLibrary() {
+  if (requireAccount('create a personal archive')) return
+  showCreateLibrary.value = true
+}
+
+function navigateToView(view) {
+  activeView.value = view
+  return true
 }
 
 function openCreateAccount() {
@@ -653,6 +699,7 @@ function submitCreateAccount() {
   email.value = emailAddress
   password.value = passwordValue
   profileName.value = name || 'THE NIGHT EXPLORER'
+  isGuest.value = false
   loginError.value = ''
   showCreateAccount.value = false
   welcome.value = false
@@ -663,6 +710,7 @@ function logout() {
   clearTimeout(toastTimer)
   welcome.value = true
   activeView.value = 'home'
+  isGuest.value = false
   email.value = ''
   password.value = ''
   newMessage.value = ''
@@ -681,7 +729,7 @@ function toggleAccountMenu(location) {
 
 function openProfile() {
   accountMenu.value = ''
-  activeView.value = 'profile'
+  navigateToView('profile')
 }
 
 async function generateSound() {
@@ -1286,6 +1334,7 @@ function onAudioError() {
 }
 
 function toggleSaved(track) {
+  if (requireAccount('save tracks to your personal archive')) return
   savedTracks.value = savedTracks.value.includes(track.id)
     ? savedTracks.value.filter((id) => id !== track.id)
     : [...savedTracks.value, track.id]
@@ -1293,6 +1342,7 @@ function toggleSaved(track) {
 }
 
 function createLibrary() {
+  if (requireAccount('create a personal archive')) return
   const title = libraryName.value.trim()
   if (!title) return notify('Give your new archive a name')
   libraries.value = [{ id: Date.now(), title, subtitle: 'A SOUND THAT IS YOURS', count: 0, trackIds: [], mood: 'NEW / UNDEFINED', cover: 'photo-1470225620780-dba8ba36b745', color: '#476477', saved: true }, ...libraries.value]
@@ -1303,12 +1353,13 @@ function createLibrary() {
 }
 
 function openArchive(library) {
+  if (!navigateToView('library')) return
   selectedLibraryId.value = library.id
   libraryTab.value = 'Archive'
-  activeView.value = 'library'
 }
 
 function setArchiveMembership(library, track, shouldAdd) {
+  if (requireAccount('manage your personal archives')) return
   if (!library) return
   const trackIds = new Set(Array.isArray(library.trackIds) ? library.trackIds.map(Number) : [])
   if (shouldAdd) trackIds.add(track.id)
@@ -1432,11 +1483,13 @@ function selectChat(index) {
 }
 
 function requestDeleteConversation() {
+  if (requireAccount('manage direct messages')) return
   showChatOptions.value = false
   showDeleteConfirm.value = true
 }
 
 function deleteConversation() {
+  if (requireAccount('manage direct messages')) return
   conversations.value[chatFriends[activeFriend.value].handle] = []
   replyTarget.value = null
   activeMessageActionsId.value = null
@@ -1447,6 +1500,7 @@ function deleteConversation() {
 }
 
 function toggleReaction(messageId, emoji) {
+  if (requireAccount('use direct messages')) return
   const message = messages.value.find((item) => item.id === messageId)
   if (!message) return
 
@@ -1466,6 +1520,7 @@ function toggleReaction(messageId, emoji) {
 }
 
 function unsendMessage(messageId) {
+  if (requireAccount('manage direct messages')) return
   const messageIndex = messages.value.findIndex((message) => message.id === messageId && message.from === 'You')
   if (messageIndex === -1) return
 
@@ -1477,6 +1532,7 @@ function unsendMessage(messageId) {
 }
 
 function shareCurrentSong() {
+  if (requireAccount('share tracks with friends')) return
   if (!currentTrack.value) {
     notify('No track selected to share')
     return
@@ -1521,6 +1577,7 @@ async function searchSpotify(query = search.value) {
 }
 
 function sendMessage() {
+  if (requireAccount('send direct messages')) return
   const text = newMessage.value.trim()
   if (!text) return
 
@@ -1681,7 +1738,7 @@ watch(email, () => {
         <a class="wordmark" href="#top" aria-label="SYNX home">SYNX<span class="wordmark-dot">.</span></a>
         <span class="micro-label">PERSONAL MUSIC IDENTITY ENGINE <i>//</i> EST. 2025</span>
         <button class="theme-toggle" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`" @click="toggleTheme"><span>{{ theme === 'light' ? '☾' : '☼' }}</span><small>{{ theme === 'light' ? 'DARK' : 'LIGHT' }}</small></button>
-        <button class="text-button" @click="enterApp">ENTER AS GUEST <span>↗</span></button>
+        <button class="text-button" @click="enterApp(false)">ENTER AS GUEST <span>↗</span></button>
       </header>
       <div class="welcome-grid" id="top">
         <main class="welcome-copy">
@@ -1751,21 +1808,21 @@ watch(email, () => {
         <a class="wordmark sidebar-brand" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a>
         <div class="side-section-label">YOUR SPACE <span>01—06</span></div>
         <nav class="side-nav" aria-label="Main navigation">
-          <button v-for="item in navigation" :key="item.id" :class="{ active: activeView === item.id }" @click="activeView = item.id">
+          <button v-for="item in navigation" :key="item.id" :class="{ active: activeView === item.id }" @click="navigateToView(item.id)">
             <span class="nav-icon">{{ item.icon }}</span><span>{{ item.label }}</span><span v-if="item.count" class="nav-count">{{ item.count }}</span>
           </button>
         </nav>
-        <div class="side-library-heading"><span>YOUR ARCHIVES</span><button aria-label="Create a library" @click="showCreateLibrary = true">+</button></div>
-        <button v-for="library in libraries" :key="library.id" class="side-library" @click="activeView = 'library'">
+        <div class="side-library-heading"><span>{{ isGuest ? 'ARCHIVES · LOGIN' : 'YOUR ARCHIVES' }}</span><button aria-label="Create a library" @click="openCreateLibrary">+</button></div>
+        <button v-for="library in libraries" :key="library.id" class="side-library" @click="navigateToView('library')">
           <span class="side-library-mark" :style="{ backgroundColor: library.color }"></span>{{ library.title }}
         </button>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom">
-          <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>FREE FREQUENCY</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div>
+          <div class="avatar avatar-small">{{ profileName.charAt(0).toUpperCase() || 'Z' }}</div><div class="sidebar-user"><strong>{{ profileName }}</strong><span>{{ isGuest ? 'GUEST SESSION' : 'FREE FREQUENCY' }}</span></div><div class="account-menu-anchor"><button class="more-button" aria-label="Account options" :aria-expanded="accountMenu === 'sidebar'" @click="toggleAccountMenu('sidebar')">···</button><div v-if="accountMenu === 'sidebar'" class="account-menu account-menu-popover-sidebar" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="openAccountAccess">{{ isGuest ? 'SIGN IN / CREATE ACCOUNT' : 'LOG OUT' }}</button></div></div>
         </div>
       </aside>
 
-      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">Z</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="logout">LOG OUT</button></div></div></header>
+      <header class="mobile-header"><a class="wordmark" href="#home" @click.prevent="activeView = 'home'">SYNX<span class="wordmark-dot">.</span></a><div class="account-menu-anchor"><button class="mobile-avatar" aria-label="Account options" :aria-expanded="accountMenu === 'mobile'" @click="toggleAccountMenu('mobile')">{{ profileName.charAt(0).toUpperCase() || 'G' }}</button><div v-if="accountMenu === 'mobile'" class="account-menu account-menu-popover-top" role="menu"><button type="button" role="menuitem" @click="openProfile">MY PROFILE ↗</button><button type="button" role="menuitem" @click="openAccountAccess">{{ isGuest ? 'SIGN IN / CREATE ACCOUNT' : 'LOG OUT' }}</button></div></div></header>
       <section class="mobile-player" aria-label="Music player">
         <button class="mobile-player-art" type="button" aria-label="Open expanded player" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 100)" :alt="currentTrack?.title" /></button>
         <button class="mobile-player-track" type="button" @click="isExpanded = true"><strong>{{ currentTrack?.title }}</strong><small>{{ currentTrack?.artist }}</small></button>
@@ -1827,14 +1884,14 @@ watch(email, () => {
           <section class="identity-result" :class="{ 'result-reveal': generated }">
             <div class="identity-heading"><div><span class="section-index">02 / THE READ</span><h2>YOUR CURRENT SOUND<span class="orange-period">.</span></h2></div><span class="match-note">{{ generated ? 'PROFILE UPDATED JUST NOW' : 'BASED ON YOUR LAST LISTEN' }}</span></div>
             <div class="identity-body">
-              <div class="identity-name"><span>YOU'RE SOUNDING LIKE</span><h3>{{ generated ? 'THE MIDNIGHT\nDREAMER' : profileName }}</h3><p>Atmospheric sounds, emotional melodies, and music that feels like a scene you don't want to end.</p><button class="inline-link" @click="activeView = 'profile'">SEE YOUR FULL IDENTITY <span>↗</span></button></div>
+              <div class="identity-name"><span>YOU'RE SOUNDING LIKE</span><h3>{{ generated ? 'THE MIDNIGHT\nDREAMER' : profileName }}</h3><p>Atmospheric sounds, emotional melodies, and music that feels like a scene you don't want to end.</p>              <button class="inline-link" @click="navigateToView('profile')">SEE YOUR FULL IDENTITY <span>↗</span></button></div>
               <div class="genre-cloud"><span class="genre-label">YOUR FREQUENCY MAP</span><div class="genre-tags"><span class="genre-chip chip-orange">ALTERNATIVE</span><span class="genre-chip chip-blue">DREAM POP</span><span class="genre-chip chip-green">LATE NIGHT</span><span class="genre-chip chip-pink">ATMOSPHERIC</span><span class="genre-chip chip-yellow">INDIE</span></div><div class="signal-bars" aria-label="Strong match"><i v-for="n in 20" :key="n" :class="{ lit: n < 16 }" :style="{ height: `${9 + (n * 17 % 32)}px` }"></i></div><span class="signal-caption">SIGNAL STRENGTH <b>84.6%</b></span></div>
             </div>
           </section>
           </FlipCard>
 
           <section class="content-section discover-preview">
-            <div class="section-title-row"><div><span class="section-index">03 / THE FINDS</span><h2>Sounds like <em>you.</em></h2></div><button class="inline-link" @click="activeView = 'discover'">ALL RECOMMENDATIONS <span>↗</span></button></div>
+            <div class="section-title-row"><div><span class="section-index">03 / THE FINDS</span><h2>Sounds like <em>you.</em></h2></div><button class="inline-link" @click="navigateToView('discover')">ALL RECOMMENDATIONS <span>↗</span></button></div>
             <div class="track-grid">
               <FlipCard v-for="(track, index) in recommendedTracks.slice(0, 3)" :key="track.id" class="track-flipper" :border-glow="false" :title="track.title" :subtitle="track.artist" :description="`${track.genre} · ${track.mood} · ${track.duration}`" :aria-label="`Flip ${track.title} track card`" :style="{ '--card-accent': track.color }">
                 <article class="track-card">
@@ -1847,7 +1904,7 @@ watch(email, () => {
           </section>
 
           <section class="content-section library-preview">
-            <div class="section-title-row"><div><span class="section-index">04 / COLLECTED</span><h2>Your sound <em>archives.</em></h2></div><button class="inline-link" @click="activeView = 'library'">OPEN LIBRARY <span>↗</span></button></div>
+            <div class="section-title-row"><div><span class="section-index">04 / COLLECTED</span><h2>Your sound <em>archives.</em></h2></div><button class="inline-link" @click="navigateToView('library')">OPEN LIBRARY <span>↗</span></button></div>
             <div class="library-grid"><FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" :border-glow="false" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${libraryTrackCount(library)} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }"><div class="library-card"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }}</span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ libraryTrackCount(library) }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span></div><template #back-details><button class="switch-button switch-orange" type="button" @click.stop="openArchive(library)">OPEN ARCHIVE <span>↗</span></button></template></FlipCard></div>
           </section>
         </template>
@@ -1896,9 +1953,9 @@ watch(email, () => {
         </template>
 
         <template v-else-if="activeView === 'library'">
-          <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="showCreateLibrary = true">+ NEW ARCHIVE</button></section>
+          <section class="page-heading library-page-heading"><span class="section-index">SYNX / 03</span><h1>YOUR MUSIC<br><em>HAS A HOME.</em></h1><p>Collected feelings, filed by you.</p><button class="switch-button switch-orange" @click="openCreateLibrary">+ NEW ARCHIVE</button></section>
           <section class="content-section library-full-section">
-            <div class="section-title-row"><div><span class="section-index">01 / PERSONAL ARCHIVE</span><h2>Libraries <em>({{ libraries.length }})</em></h2></div><div class="library-tabs"><button v-for="filter in ['All', 'Songs', 'Albums', 'Artists', 'Libraries', 'Offline']" :key="filter" :class="{ selected: libraryTab === filter }" @click="filter === 'Offline' ? activeView = 'offline' : libraryTab = filter">{{ filter.toUpperCase() }}</button></div></div>
+            <div class="section-title-row"><div><span class="section-index">01 / PERSONAL ARCHIVE</span><h2>Libraries <em>({{ libraries.length }})</em></h2></div><div class="library-tabs"><button v-for="filter in ['All', 'Songs', 'Albums', 'Artists', 'Libraries', 'Offline']" :key="filter" :class="{ selected: libraryTab === filter }" @click="filter === 'Offline' ? navigateToView('offline') : libraryTab = filter">{{ filter.toUpperCase() }}</button></div></div>
             <div v-if="libraryTab === 'All' || libraryTab === 'Libraries'" class="library-grid library-full-grid">
               <FlipCard v-for="(library, index) in libraries" :key="library.id" class="library-flipper" eyebrow="ARCHIVE / COLLECTED" :title="library.title" :subtitle="`${libraryTrackCount(library)} tracks`" :description="library.mood" :aria-label="`Flip ${library.title} archive card`" :style="{ '--library-accent': library.color }">
                 <article class="library-card library-card-static"><img :src="imageUrl(library.cover)" :alt="`${library.title} archive artwork`" /><span class="library-card-number">ARCHIVE 0{{ index + 1 }} <i>● PUBLIC</i></span><span class="library-card-info"><strong>{{ library.title }}</strong><small>{{ libraryTrackCount(library) }} TRACKS · {{ library.mood }}</small></span><span class="library-card-arrow">↗</span><div class="library-card-actions"><button @click.stop="playArchive(library)" :disabled="!libraryTrackCount(library)">▶ PLAY ALL</button><button @click.stop="openArchive(library)">OPEN ↗</button><button @click.stop="copyShareLink">SHARE ↗</button></div></article>
@@ -2006,18 +2063,7 @@ watch(email, () => {
         </template>
 
         <template v-else-if="activeView === 'groups'">
-          <section class="page-heading"><span class="section-index">SYNX / 05</span><h1>LISTEN<br><em>IN GOOD COMPANY.</em></h1><p>One room. One queue. Everyone on the same wavelength.</p></section>
-          <section class="room-layout">
-            <div class="room-main">
-              <div class="room-kicker"><span class="live-dot"></span> SYNX LISTENING ROOM <span>//</span> ROOM 0042</div>
-              <FlipCard class="room-art-flipper" eyebrow="THE SHARED FREQUENCY" :title="currentTrack?.title || 'Space Song'" :subtitle="currentTrack?.artist || 'Beach House'" description="NOW PLAYING FOR THE ROOM" aria-label="Flip current listening-room artwork">
-                <div class="room-art"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="`Now playing ${currentTrack?.title}`" /><div class="room-art-overline">NOW PLAYING FOR THE ROOM</div><div class="room-art-title"><span>{{ currentTrack?.artist || 'Beach House' }}</span><h2>{{ currentTrack?.title || 'Space Song' }}</h2></div><div class="room-disc">S<span>✳</span></div></div>
-              </FlipCard>
-              <div class="room-track-info"><div><span class="section-index">THE SHARED FREQUENCY</span><h3>{{ currentTrack?.title }} <em>/ {{ currentTrack?.artist }}</em></h3></div><div class="room-reactions"><button v-for="reaction in ['🔥', '♡', '♫', '⚡', '✳']" :key="reaction" :class="{ reacted: roomReaction === reaction }" @click="roomReaction = reaction">{{ reaction }}</button></div></div>
-              <div class="room-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="room-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button><input class="player-seek room-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><span>{{ formatTime(currentTime) }} / {{ formatTime(durationSeconds) }}</span></div>
-            </div>
-            <aside class="room-aside"><div class="room-side-title"><span class="section-index">THE MIDNIGHT CREW</span><strong>06 LISTENING <i class="live-dot"></i></strong></div><div class="room-listeners"><div v-for="(friend, index) in chatFriends" :key="friend.handle" class="listener-row"><span class="avatar friend-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}</span><div><strong>{{ friend.name }}</strong><small>{{ index === 0 ? 'HOSTING THE ROOM' : 'ON THIS FREQUENCY' }}</small></div><span class="listener-wave">♫</span></div><div class="listener-placeholder">+ 3 MORE IN THE ROOM</div></div><div class="room-chat-label"><span class="section-index">ROOM CHAT</span><span>LIVE</span></div><div class="room-chat-message"><strong>mia.c</strong><p>this one feels like driving through a memory</p></div><div class="room-chat-message"><strong>jules</strong><p>exactly the right kind of ache ✳</p></div><button class="switch-button switch-orange room-join" @click="roomJoined = !roomJoined">{{ roomJoined ? '✓ YOU’RE IN THE ROOM' : 'JOIN THE LISTENING ROOM' }}</button></aside>
-          </section>
+          <ListeningRoom :profile-name="profileName" :is-guest="isGuest" :catalog-tracks="listeningRoomTracks" @require-account="handleRoomAccountRequired" />
         </template>
 
         <template v-else-if="activeView === 'profile'">
@@ -2035,7 +2081,7 @@ watch(email, () => {
           <section class="page-heading"><span class="section-index">SYNX / 06</span><h1>SOUND THAT<br><em>TRAVELS WITH YOU.</em></h1><p>Your favorite frequencies, off the grid.</p></section><section class="offline-summary"><div class="offline-header"><div><span class="section-index">DEVICE MUSIC STORAGE</span><h2>OFFLINE<br>ARCHIVE<span>.</span></h2></div><span class="offline-status"><i></i> READY WHEN YOU ARE</span></div><div class="storage-meter"><div></div></div><div class="storage-numbers"><span>3.8 GB USED</span><span>10 GB AVAILABLE</span></div><div class="offline-library-list"><div v-for="library in libraries" :key="library.id" class="offline-row"><img :src="imageUrl(library.cover, 140)" alt="" /><div><strong>{{ library.title }}</strong><span>{{ libraryTrackCount(library) }} SONGS · DOWNLOADED</span></div><b>✓</b></div></div><p class="offline-note">OFFLINE MODE IS SIMULATED FOR THIS PREVIEW. YOUR ARCHIVES STAY ON THIS DEVICE.</p></section>
         </template>
 
-        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="activeView = 'offline'">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="logout">LOG OUT ↗</button></footer>
+        <footer class="page-footer"><span>SYNX © 2025 <i>//</i> YOUR SOUND, YOUR IDENTITY</span><span>MADE OF MOOD, NOT METADATA. <b>✳</b></span><button @click="navigateToView('offline')">OFFLINE ARCHIVE ↗</button><button type="button" class="logout-button" @click="openAccountAccess">{{ isGuest ? 'SIGN IN ↗' : 'LOG OUT ↗' }}</button></footer>
       </main>
 
       <aside class="right-rail">
@@ -2044,7 +2090,7 @@ watch(email, () => {
           <section class="now-playing-card"><div class="rail-section-label"><span>NOW PLAYING</span><i class="live-dot"></i></div><button class="now-playing-art" @click="isExpanded = true"><img :src="imageUrl(currentTrack?.cover || tracks[2].cover)" :alt="currentTrack?.title" /><span class="expand-icon">⤢</span></button><div class="now-playing-meta"><div><strong>{{ currentTrack?.title || 'Space Song' }}</strong><span>{{ currentTrack?.artist || 'Beach House' }}</span></div><div class="now-playing-actions"><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button><button class="track-share-button" type="button" @click="shareCurrentSong">↗</button></div></div><input class="player-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><div class="player-times"><span>{{ formatTime(currentTime) }}</span><span>{{ formatTime(durationSeconds) }}</span></div><div v-if="playbackStatus === 'loading'" class="player-status">Loading audio…</div><div v-else-if="audioError" class="player-status" role="status">{{ audioError }}<button v-if="playbackProvider === 'youtube'" type="button" class="source-config-button" @click="openYouTubeConfig(currentTrack)">SET VIDEO ID</button></div><div v-else-if="playbackStatus === 'unavailable'" class="player-status">Local MP3 not available — add the file to public/music/.</div><div class="mini-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="mini-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button></div><div class="volume-control"><button class="volume-toggle" type="button" :aria-label="volume ? 'Mute volume' : 'Restore volume'" @click="toggleVolume">{{ volume ? '◖' : '◖̸' }}</button><WakeSlider :value="volume" :min="0" :max="100" :step="1" :bars="28" :height="42" :rest-height="9" :gap="3" fill-color="#f26a3d" :track-color="theme === 'dark' ? '#4b4c45' : '#cbc7bc'" crest-color="#f5aa8f" :sensitivity="1" :reach="6" :skew="0.6" :glide="0.3" :smoothing="100" show-value aria-label="Playback volume" @change="volume = $event" /></div><div class="rail-equalizer" :class="{ animating: isPlaying }"><i v-for="n in 28" :key="n"></i></div></section>
         </BorderGlow>
         <BorderGlow class="rail-card-glow" :enabled="!['home', 'discover', 'chat'].includes(activeView)">
-          <section class="rail-friends"><div class="rail-subhead"><span>YOUR PEOPLE</span><button @click="activeView = 'chat'">ALL ↗</button></div><button v-for="friend in chatFriends.slice(0, 2)" :key="friend.handle" class="rail-friend" @click="activeView = 'chat'"><span class="avatar rail-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span><span><strong>{{ friend.name }}</strong><small>{{ friend.active ? 'LISTENING NOW' : 'OFFLINE' }}</small></span><b>♫</b></button></section>
+          <section class="rail-friends"><div class="rail-subhead"><span>YOUR PEOPLE</span><button @click="navigateToView('chat')">ALL ↗</button></div><button v-for="friend in chatFriends.slice(0, 2)" :key="friend.handle" class="rail-friend" @click="navigateToView('chat')"><span class="avatar rail-avatar" :style="{ backgroundColor: friend.color }">{{ friend.avatar }}<i v-if="friend.active"></i></span><span><strong>{{ friend.name }}</strong><small>{{ friend.active ? 'LISTENING NOW' : 'OFFLINE' }}</small></span><b>♫</b></button></section>
         </BorderGlow>
         <BorderGlow class="rail-card-glow" :enabled="!['home', 'discover', 'chat'].includes(activeView)">
           <section class="rail-room"><span class="section-index">LISTENING TOGETHER</span><div class="rail-room-art"><img :src="imageUrl('photo-1470252649378-9c29740c9fa8', 300)" alt="Sun setting over an open landscape" /><span>6 FRIENDS<br>IN THE ROOM</span></div><strong>THE MIDNIGHT CREW</strong><button @click="activeView = 'groups'">JOIN THE ROOM <span>↗</span></button></section>
@@ -2052,7 +2098,7 @@ watch(email, () => {
         <div class="rail-quote"><span>“</span><p>Some songs know you before you know yourself.</p><small>SYNX FIELD NOTE 001</small></div>
       </aside>
 
-      <nav class="mobile-nav" aria-label="Mobile navigation"><button v-for="item in navigation.filter(item => ['home', 'discover', 'library', 'chat', 'profile'].includes(item.id))" :key="item.id" :class="{ active: activeView === item.id }" @click="activeView = item.id"><span>{{ item.icon }}</span><small>{{ item.label }}</small></button></nav>
+      <nav class="mobile-nav" aria-label="Mobile navigation"><button v-for="item in navigation.filter(item => ['home', 'discover', 'library', 'chat', 'profile'].includes(item.id))" :key="item.id" :class="{ active: activeView === item.id }" @click="navigateToView(item.id)"><span>{{ item.icon }}</span><small>{{ item.label }}</small></button></nav>
 
       <div v-if="isExpanded" class="player-overlay" @click.self="isExpanded = false"><button class="close-expanded" aria-label="Close player" @click="isExpanded = false">×</button><div class="expanded-player"><span class="section-index">SYNX / NOW PLAYING</span><img :src="imageUrl(currentTrack?.cover || tracks[2].cover, 1000)" :alt="currentTrack?.title" /><div class="expanded-track-info"><div><h2>{{ currentTrack?.title }}</h2><p>{{ currentTrack?.artist }} · {{ currentTrack?.genre }}</p></div><button class="save-track" :class="{ saved: savedTracks.includes(currentTrack?.id) }" @click="toggleSaved(currentTrack)">{{ savedTracks.includes(currentTrack?.id) ? '♥' : '♡' }}</button></div><input class="player-seek" type="range" min="0" :max="durationSeconds || 0" step="0.1" :value="currentTime" :disabled="!durationSeconds" aria-label="Seek through track" @input="seekTo(Number($event.target.value))" /><div class="player-times"><span>{{ formatTime(currentTime) }}</span><span>{{ formatTime(durationSeconds) }}</span></div><div v-if="playbackStatus === 'loading'" class="player-status">Loading audio…</div><div v-else-if="audioError" class="player-status" role="status">{{ audioError }}<button v-if="playbackProvider === 'youtube'" type="button" class="source-config-button" @click="openYouTubeConfig(currentTrack)">SET VIDEO ID</button></div><div v-else-if="playbackStatus === 'unavailable'" class="player-status">Local MP3 not available — add the file to public/music/.</div><div class="mini-controls expanded-controls"><button aria-label="Previous track" @click="playPreviousTrack">|◀</button><button class="mini-play" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePlayback">{{ isPlaying ? 'Ⅱ' : '▶' }}</button><button aria-label="Next track" @click="playNextTrack">▶|</button></div><div class="expanded-actions"><button @click="toggleSaved(currentTrack)">♡ SAVE TO ARCHIVE</button><button @click="copyShareLink">↗ SHARE THIS SOUND</button></div></div></div>
 

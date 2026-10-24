@@ -4,6 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const props = defineProps({
   profileName: { type: String, required: true },
   isGuest: { type: Boolean, default: false },
+  catalogTracks: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['require-account'])
 
@@ -22,24 +23,45 @@ const activePanel = ref('queue')
 const chatDraft = ref('')
 const sendingMessage = ref(false)
 const songQuery = ref('')
+const catalogQuery = ref('')
+const customSongTitle = ref('')
+const customSongArtist = ref('')
+const customSongDuration = ref('3:30')
+const customSongAudioUrl = ref('')
+const songSource = ref('catalog')
 const songResults = ref([])
 const songSearchError = ref('')
+const songSearchInput = ref(null)
+const roomCodeField = ref(null)
 const playbackPosition = ref(0)
+const loadedAudioDuration = ref({ audioUrl: '', durationMs: 0 })
 const chatList = ref(null)
 const expandedSettings = ref(false)
 const draggedQueueId = ref('')
 const endedBySelf = ref(false)
+const audioElement = ref(null)
+const audioError = ref('')
+const audioNotice = ref('')
+const audioNeedsGesture = ref(false)
 
 let pollTimer
-let playbackTimer
 let noticeTimer
 let completedPlaybackTrackId = ''
+let reportedAudioDurationTrackId = ''
+let activeAudioTrackId = ''
 
 const currentMember = computed(() => room.value?.members.find((member) => member.id === memberId.value))
 const isHost = computed(() => currentMember.value?.role === 'host')
 const canModerate = computed(() => !props.isGuest && ['host', 'moderator'].includes(currentMember.value?.role))
 const isOnline = computed(() => room.value?.members.filter((member) => member.online).length || 0)
-const trackDuration = computed(() => room.value?.currentTrack?.durationMs || 0)
+const trackDuration = computed(() => loadedAudioDuration.value.audioUrl === room.value?.currentTrack?.audioUrl
+  ? loadedAudioDuration.value.durationMs
+  : room.value?.currentTrack?.durationMs || 0)
+const playableCatalogTracks = computed(() => props.catalogTracks.filter((track) => track.audioUrl))
+const filteredCatalogTracks = computed(() => {
+  const query = catalogQuery.value.trim().toLowerCase()
+  return props.catalogTracks.filter((track) => !query || `${track.title} ${track.artist} ${track.genre} ${track.mood}`.toLowerCase().includes(query))
+})
 const progressPercent = computed(() => trackDuration.value ? Math.min(100, (playbackPosition.value / trackDuration.value) * 100) : 0)
 const repeatLabel = computed(() => room.value?.playback.repeat === 'one' ? 'REPEAT ONE' : room.value?.playback.repeat === 'all' ? 'REPEAT ALL' : 'REPEAT OFF')
 
@@ -89,10 +111,136 @@ function clearSavedRoom() {
 }
 
 function applyRoomState(nextRoom) {
+  if (room.value?.code !== nextRoom.code) {
+    loadedAudioDuration.value = { audioUrl: '', durationMs: 0 }
+    activeAudioTrackId = ''
+    completedPlaybackTrackId = ''
+    audioError.value = ''
+    audioNotice.value = ''
+    audioNeedsGesture.value = false
+  }
   room.value = nextRoom
-  playbackPosition.value = nextRoom.playback.positionMs || 0
+  const availableDuration = loadedAudioDuration.value.audioUrl === nextRoom.currentTrack?.audioUrl
+    ? loadedAudioDuration.value.durationMs
+    : nextRoom.currentTrack?.durationMs || 0
+  playbackPosition.value = Math.min(availableDuration, nextRoom.playback.positionMs || 0)
   connected.value = true
 }
+
+function syncRoomAudio() {
+  const audio = audioElement.value
+  const track = room.value?.currentTrack
+  if (!audio) return
+
+  if (!track?.audioUrl) {
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+    audioError.value = track ? 'This track has no verified local audio source.' : ''
+    audioNotice.value = ''
+    audioNeedsGesture.value = false
+    return
+  }
+
+  if (activeAudioTrackId !== track.id) {
+    activeAudioTrackId = track.id
+    audioNotice.value = ''
+  }
+  if (track.id !== completedPlaybackTrackId && completedPlaybackTrackId) completedPlaybackTrackId = ''
+  if (completedPlaybackTrackId === track.id) {
+    if (room.value.playback.playing && room.value.playback.positionMs >= trackDuration.value - 500) return
+    completedPlaybackTrackId = ''
+  }
+
+  if (audio.src !== new URL(track.audioUrl, window.location.origin).href) {
+    audio.src = track.audioUrl
+    audio.load()
+  }
+  audio.volume = Math.min(1, Math.max(0, Number(room.value.playback.volume) / 100))
+
+  if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+    const durationMs = Number.isFinite(audio.duration) ? audio.duration * 1000 : track.durationMs
+    const positionMs = Math.min(durationMs, Math.max(0, room.value.playback.positionMs || 0))
+    if (Math.abs(audio.currentTime * 1000 - positionMs) > 1250) audio.currentTime = positionMs / 1000
+  }
+
+  if (room.value.playback.playing) {
+    audio.play().then(() => {
+      audioNeedsGesture.value = false
+      audioError.value = ''
+    }).catch((error) => {
+      if (error?.name === 'NotAllowedError') {
+        audioNeedsGesture.value = true
+        audioError.value = 'Your browser blocked automatic playback. Start audio on this device.'
+      } else if (error?.name !== 'AbortError') {
+        audioError.value = 'Audio could not start. Check the local track and try again.'
+      }
+    })
+  } else {
+    audio.pause()
+    audioNeedsGesture.value = false
+  }
+}
+
+function updateAudioPosition() {
+  if (audioElement.value) playbackPosition.value = Math.min(trackDuration.value, audioElement.value.currentTime * 1000)
+}
+
+function handleAudioReady() {
+  const track = room.value?.currentTrack
+  const audio = audioElement.value
+  if (track?.audioUrl && audio && Number.isFinite(audio.duration) && audio.duration > 0) {
+    loadedAudioDuration.value = { audioUrl: track.audioUrl, durationMs: Math.round(audio.duration * 1000) }
+    audioNotice.value = audio.duration * 1000 < track.durationMs - 1000
+      ? `This local audio file is ${formatTime(audio.duration * 1000)}; it may be a preview rather than a full track.`
+      : ''
+    if (isHost.value && reportedAudioDurationTrackId !== track.id) {
+      reportedAudioDurationTrackId = track.id
+      if (Math.abs(track.durationMs - audio.duration * 1000) > 1000) {
+        controlPlayback('duration', Math.round(audio.duration * 1000))
+      }
+    }
+  }
+  syncRoomAudio()
+  updateAudioPosition()
+}
+
+function handleAudioEnded() {
+  const trackId = room.value?.currentTrack?.id
+  if (!trackId || completedPlaybackTrackId === trackId) return
+  completedPlaybackTrackId = trackId
+  if (isHost.value) {
+    controlPlayback('next')
+  } else if (room.value.playback.playing) {
+    audioNotice.value = 'This audio ended on your device. Waiting for the host to move to the next track.'
+  }
+}
+
+function handleAudioError() {
+  if (!room.value?.currentTrack?.audioUrl) return
+  audioNeedsGesture.value = false
+  audioError.value = 'This local audio file could not be loaded. Choose another playable track.'
+}
+
+async function startAudioOnThisDevice() {
+  try {
+    await audioElement.value?.play()
+    audioNeedsGesture.value = false
+    audioError.value = ''
+  } catch (error) {
+    audioError.value = error?.name === 'NotAllowedError'
+      ? 'Playback is still blocked by the browser. Check this site’s autoplay permissions.'
+      : 'Audio could not start. Check the local track and try again.'
+  }
+}
+
+watch(() => [
+  room.value?.currentTrack?.id,
+  room.value?.currentTrack?.audioUrl,
+  room.value?.playback.playing,
+  room.value?.playback.positionMs,
+  room.value?.playback.volume,
+], syncRoomAudio, { flush: 'post' })
 
 function removeRoomInviteFromAddress() {
   const url = new URL(window.location.href)
@@ -229,6 +377,10 @@ async function controlPlayback(action, value) {
     if (props.isGuest && ['host', 'moderator'].includes(currentMember.value?.role)) emit('require-account', 'room_host_controls')
     return
   }
+  if (action === 'play' && !room.value.currentTrack?.audioUrl && !room.value.queue.some((track) => track.audioUrl)) {
+    setNotice('Add a song with verified local audio before starting playback.', 'error')
+    return
+  }
   loading.value = true
   try {
     const result = await $fetch(`/api/rooms/${encodeURIComponent(room.value.code)}/playback`, {
@@ -267,6 +419,23 @@ async function searchSongs() {
   }
 }
 
+async function openSongSearch() {
+  if (!room.value) {
+    setNotice('Join a listening room before adding a song.', 'error')
+    await nextTick()
+    roomCodeField.value?.focus()
+    return
+  }
+  activePanel.value = 'queue'
+  songSource.value = 'catalog'
+  await nextTick()
+  songSearchInput.value?.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'center',
+  })
+  songSearchInput.value?.focus()
+}
+
 function durationFromString(value) {
   const [minutes, seconds] = String(value || '3:30').split(':').map(Number)
   return ((minutes || 0) * 60 + (seconds || 0)) * 1000
@@ -279,6 +448,44 @@ async function addSong(track) {
     requestId,
   })
   if (result) setNotice(`${track.title} added to the queue.`)
+  return result
+}
+
+async function addCustomSong() {
+  const title = customSongTitle.value.trim()
+  const artist = customSongArtist.value.trim()
+  const duration = customSongDuration.value.trim()
+  const match = /^(\d{1,3}):([0-5]\d)$/.exec(duration)
+  const durationMs = match ? (Number(match[1]) * 60 + Number(match[2])) * 1000 : 0
+
+  if (!title || !artist) {
+    setNotice('Add both a song title and artist.', 'error')
+    return
+  }
+  if (!durationMs || durationMs > 3_600_000) {
+    setNotice('Enter a duration between 0:01 and 60:00.', 'error')
+    return
+  }
+  const audioSource = playableCatalogTracks.value.find((track) => track.audioUrl === customSongAudioUrl.value)
+  if (!audioSource) {
+    setNotice('Choose an available SYNX audio source for this custom entry.', 'error')
+    return
+  }
+
+  const result = await addSong({
+    id: randomId('custom-track'),
+    title,
+    artist,
+    cover: '',
+    durationMs,
+    audioUrl: audioSource.audioUrl,
+  })
+  if (result) {
+    customSongTitle.value = ''
+    customSongArtist.value = ''
+    customSongDuration.value = '3:30'
+    customSongAudioUrl.value = ''
+  }
 }
 
 async function removeSong(item) {
@@ -422,32 +629,23 @@ onMounted(async () => {
   if (rememberedCode) await joinRoom(rememberedCode)
 
   pollTimer = window.setInterval(() => requestRoomSnapshot(), 2500)
-  playbackTimer = window.setInterval(() => {
-    if (!room.value?.playback.playing) return
-    if (playbackPosition.value < trackDuration.value) {
-      playbackPosition.value = Math.min(trackDuration.value, playbackPosition.value + 1000)
-      return
-    }
-    const trackId = room.value.currentTrack?.id
-    if (trackId && completedPlaybackTrackId !== trackId) {
-      completedPlaybackTrackId = trackId
-      controlPlayback('next')
-    }
-  }, 1000)
 })
 
 onBeforeUnmount(() => {
   clearInterval(pollTimer)
-  clearInterval(playbackTimer)
   clearTimeout(noticeTimer)
+  audioElement.value?.pause()
 })
 </script>
 
 <template>
   <section class="page-heading listening-heading">
-    <span class="section-index">SYNX / 05</span>
-    <h1>LISTEN<br><em>IN GOOD COMPANY.</em></h1>
-    <p>One room. One queue. Everyone on the same wavelength.</p>
+    <div>
+      <span class="section-index">SYNX / 05</span>
+      <h1>LISTEN<br><em>IN GOOD COMPANY.</em></h1>
+      <p>One room. One queue. Everyone on the same wavelength.</p>
+    </div>
+    <button type="button" class="room-add-song-button" @click="openSongSearch">ADD A SONG <span>+</span></button>
   </section>
 
   <section v-if="!room" class="room-lobby" aria-labelledby="room-lobby-title">
@@ -462,7 +660,7 @@ onBeforeUnmount(() => {
         <span class="room-card-index">01 / JOIN A ROOM</span>
         <label for="room-code">INVITE CODE</label>
         <div class="room-code-row">
-          <input id="room-code" v-model="codeInput" maxlength="12" placeholder="e.g. 0042" autocomplete="off" />
+            <input id="room-code" ref="roomCodeField" v-model="codeInput" maxlength="12" placeholder="e.g. 0042" autocomplete="off" />
           <button class="room-primary-button" type="submit" :disabled="loading">JOIN <span>↗</span></button>
         </div>
         <p>Got a link? Open it in this browser to join by invite.</p>
@@ -475,10 +673,20 @@ onBeforeUnmount(() => {
         <button class="room-primary-button create-room-button" type="submit" :disabled="loading">CREATE ROOM <span>↗</span></button>
       </form>
     </div>
-    <p class="prototype-note"><span class="live-dot"></span> Prototype room service · State lasts while the server is running · Audio is not streamed</p>
+    <p v-if="notice" class="lobby-feedback" :class="{ 'notice-error': errorMessage }" role="status">{{ notice }}</p>
+    <p class="prototype-note"><span class="live-dot"></span> Prototype room service · State lasts while the server is running · Audio uses local SYNX files</p>
   </section>
 
   <section v-else class="listening-room" :aria-label="`${room.name} listening room`">
+    <audio
+      ref="audioElement"
+      hidden
+      preload="metadata"
+      @loadedmetadata="handleAudioReady"
+      @timeupdate="updateAudioPosition"
+      @ended="handleAudioEnded"
+      @error="handleAudioError"
+    ></audio>
     <div v-if="!connected" class="room-connection-banner" role="status">
       <span>CONNECTION INTERRUPTED · TRYING TO REJOIN</span>
       <button type="button" @click="requestRoomSnapshot(true)">RECONNECT ↻</button>
@@ -508,8 +716,8 @@ onBeforeUnmount(() => {
 
     <div class="room-sync-banner" role="status">
       <span class="sync-wave">♫</span>
-      <span><strong>ROOM STATE SYNCED</strong><small>Track controls and queue update for every connected browser.</small></span>
-      <span class="audio-prototype-label">DEMO STATE · NO AUDIO STREAM</span>
+      <span><strong>ROOM PLAYBACK SYNCED</strong><small>Each browser plays the same verified SYNX audio and follows the shared room position.</small></span>
+      <span class="audio-prototype-label">LOCAL AUDIO · NOT STREAMED</span>
     </div>
 
     <div class="room-workspace">
@@ -555,6 +763,10 @@ onBeforeUnmount(() => {
             <button type="button" class="transport-toggle repeat-toggle" :aria-label="repeatLabel" :aria-pressed="room.playback.repeat !== 'off'" :disabled="!canModerate" @click="controlPlayback('repeat')"><span>↻</span><small>{{ room.playback.repeat === 'one' ? '1' : '' }}</small></button>
             <div class="volume-control"><span aria-hidden="true">◖))</span><input aria-label="Room playback volume" type="range" min="0" max="100" :value="room.playback.volume" @input="controlPlayback('volume', Number($event.target.value))" :disabled="!canModerate" /></div>
           </div>
+          <p v-if="audioError || audioNotice" class="permission-hint" role="status">
+            {{ audioError || audioNotice }}
+            <button v-if="audioNeedsGesture" type="button" @click="startAudioOnThisDevice">PLAY AUDIO HERE</button>
+          </p>
           <p v-if="!canModerate" class="permission-hint">
             {{ isGuest && ['host', 'moderator'].includes(currentMember?.role) ? 'Sign in to use host and moderator playback controls.' : 'Only the host and moderators can control playback.' }}
             <button v-if="isGuest && ['host', 'moderator'].includes(currentMember?.role)" type="button" @click="emit('require-account', 'room_host_controls')">SIGN IN</button>
@@ -595,19 +807,52 @@ onBeforeUnmount(() => {
 
           <div v-if="activePanel === 'queue'" class="queue-panel" role="tabpanel">
             <div class="panel-heading queue-heading"><div><span class="section-index">UP NEXT</span><h3>Room queue</h3></div><span class="queue-count">{{ room.queue.length }} TRACKS</span></div>
-            <form class="song-search-form" @submit.prevent="searchSongs">
-              <label class="visually-hidden" for="room-song-search">Search Spotify for a song</label>
-              <input id="room-song-search" v-model="songQuery" placeholder="Find a song or artist..." />
-              <button type="submit" :disabled="searching">{{ searching ? '…' : 'SEARCH' }}</button>
-            </form>
-            <p v-if="songSearchError" class="search-feedback" role="status">{{ songSearchError }}</p>
-            <div v-if="songResults.length" class="song-search-results">
-              <article v-for="song in songResults" :key="song.id" class="song-result-row">
-                <img v-if="song.cover" :src="song.cover" alt="" />
-                <div class="search-result-copy"><strong>{{ song.title }}</strong><span>{{ song.artist }}</span></div>
-                <button type="button" :aria-label="`Add ${song.title} to the queue`" @click="addSong(song)">+</button>
-              </article>
+            <div class="song-source-tabs" role="tablist" aria-label="Choose how to add a song">
+              <button v-for="source in [{ id: 'catalog', label: 'SYNX CATALOG' }, { id: 'spotify', label: 'SPOTIFY' }, { id: 'custom', label: 'CUSTOM' }]" :key="source.id" type="button" role="tab" :aria-selected="songSource === source.id" :class="{ selected: songSource === source.id }" @click="songSource = source.id">{{ source.label }}</button>
             </div>
+            <template v-if="songSource === 'catalog'">
+              <label class="visually-hidden" for="room-catalog-search">Search SYNX songs</label>
+              <input id="room-catalog-search" ref="songSearchInput" v-model="catalogQuery" class="catalog-search-input" placeholder="Find a song in SYNX..." />
+              <div v-if="filteredCatalogTracks.length" class="song-search-results">
+                <article v-for="song in filteredCatalogTracks" :key="song.id" class="song-result-row">
+                  <img v-if="song.cover" :src="song.cover" alt="" />
+                  <div class="search-result-copy"><strong>{{ song.title }}</strong><span>{{ song.artist }} · {{ song.duration }}</span></div>
+                  <button type="button" :aria-label="song.audioUrl ? `Add ${song.title} to the queue` : `${song.title} has no playable local audio`" :title="song.audioUrl ? 'Add to queue' : 'No verified local audio available'" :disabled="loading || !song.audioUrl" @click="addSong(song)">{{ song.audioUrl ? '+' : '—' }}</button>
+                </article>
+              </div>
+              <p v-else class="search-feedback">No SYNX tracks match that search.</p>
+            </template>
+            <template v-else-if="songSource === 'spotify'">
+              <form class="song-search-form" @submit.prevent="searchSongs">
+                <label class="visually-hidden" for="room-song-search">Search Spotify for a song</label>
+                <input id="room-song-search" ref="songSearchInput" v-model="songQuery" placeholder="Find a song or artist..." />
+                <button type="submit" :disabled="searching">{{ searching ? '…' : 'SEARCH' }}</button>
+              </form>
+              <p v-if="songSearchError" class="search-feedback" role="status">{{ songSearchError }}</p>
+              <p v-if="songResults.length" class="custom-song-note">Spotify search provides song details only. Tracks need a verified local SYNX audio file before they can be queued.</p>
+              <div v-if="songResults.length" class="song-search-results">
+                <article v-for="song in songResults" :key="song.id" class="song-result-row">
+                  <img v-if="song.cover" :src="song.cover" alt="" />
+                  <div class="search-result-copy"><strong>{{ song.title }}</strong><span>{{ song.artist }}</span></div>
+                  <button type="button" :aria-label="`${song.title} has no playable local audio`" title="Spotify metadata only; no local audio available" disabled>—</button>
+                </article>
+              </div>
+            </template>
+            <form v-else class="custom-song-form" @submit.prevent="addCustomSong">
+              <label for="custom-song-title">SONG TITLE</label>
+              <input id="custom-song-title" v-model="customSongTitle" maxlength="120" placeholder="Enter a song title" required />
+              <label for="custom-song-artist">ARTIST</label>
+              <input id="custom-song-artist" v-model="customSongArtist" maxlength="120" placeholder="Enter an artist" required />
+              <label for="custom-song-duration">DURATION <span>MM:SS</span></label>
+              <input id="custom-song-duration" v-model="customSongDuration" inputmode="numeric" pattern="[0-9]{1,3}:[0-5][0-9]" placeholder="3:30" required />
+              <label for="custom-song-audio">PLAYABLE SYNX AUDIO</label>
+              <select id="custom-song-audio" v-model="customSongAudioUrl" required :disabled="!playableCatalogTracks.length">
+                <option value="" disabled>{{ playableCatalogTracks.length ? 'Choose an available local track' : 'No local audio is available' }}</option>
+                <option v-for="track in playableCatalogTracks" :key="track.id" :value="track.audioUrl">{{ track.title }} — {{ track.artist }}</option>
+              </select>
+              <p class="custom-song-note">The custom title and artist are queue details; playback uses the selected SYNX audio file.</p>
+              <button type="submit" class="custom-song-submit" :disabled="loading || !playableCatalogTracks.length">ADD CUSTOM SONG <span>+</span></button>
+            </form>
             <div v-if="room.queue.length" class="queue-list" aria-label="Upcoming songs">
               <article
                 v-for="(item, index) in room.queue"
@@ -671,6 +916,13 @@ onBeforeUnmount(() => {
 
 <style>
 .listening-heading h1 em{color:var(--orange)}
+.listening-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+.listening-heading>div{min-width:0}
+.room-add-song-button{display:flex;align-items:center;gap:20px;flex:none;min-height:44px;margin-bottom:4px;padding:0 16px;border:1px solid var(--orange);background:var(--orange);color:#171714;font-family:var(--mono);font-size:10px;letter-spacing:.04em;cursor:pointer;transition:background .18s ease,color .18s ease}
+.room-add-song-button span{font-size:18px;line-height:1}
+.room-add-song-button:hover{background:transparent;color:var(--orange)}
+.lobby-feedback{margin:14px 0 0;color:#f1eee6;font-size:12px}
+.lobby-feedback.notice-error{color:var(--orange)}
 .room-lobby{margin-top:24px;padding:clamp(22px,4vw,48px);border:1px solid #34352f;background:#20211e;color:var(--paper)}
 .lobby-intro{max-width:660px}.lobby-intro .section-index{color:#a09d94}.lobby-intro h2{margin:13px 0 7px;font-family:var(--display);font-size:clamp(38px,5vw,59px);line-height:.95}.lobby-intro h2 em{color:var(--orange);font-style:normal}.lobby-intro>p:not(.room-ended-note){margin:0;color:#a09d94;line-height:1.7}
 .room-ended-note{color:var(--orange)}.lobby-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}.room-card{display:grid;align-content:start;padding:20px;border:1px solid #464740;background:#252621}.room-card-index{margin-bottom:22px;color:#a09d94;font-family:var(--mono);font-size:9px}.room-card>label:not(.privacy-choice){margin-bottom:7px;color:#aaa79e;font-family:var(--mono);font-size:9px}.room-card input:not([type=checkbox]){width:100%;height:42px;padding:0 11px;border:1px solid #55564e;background:#191a18;color:var(--paper);font-family:var(--mono);font-size:11px}.room-card input::placeholder{color:#77766f}.room-code-row{display:grid;grid-template-columns:1fr auto;gap:8px}.room-primary-button{min-height:42px;padding:0 16px;border:1px solid var(--orange);background:var(--orange);color:#171714;font-family:var(--mono);font-size:9px}.room-primary-button:disabled{opacity:.55;cursor:wait}.room-primary-button span{margin-left:13px}.room-card>p{margin:10px 0 0;color:#8e8c83;font-size:10px;line-height:1.5}.privacy-choice{display:flex;align-items:center;gap:8px;margin:13px 0;color:#c5c1b7;font-size:11px}.privacy-choice input{accent-color:var(--orange)}.create-room-button{justify-content:space-between}.prototype-note{display:flex;align-items:center;gap:9px;margin:21px 0 0;color:#9b988f;font-family:var(--mono);font-size:9px}
@@ -687,7 +939,20 @@ onBeforeUnmount(() => {
 .activity-list{display:grid;gap:0;margin:0;padding:4px 0;list-style:none}.activity-list li{display:grid;grid-template-columns:23px 1fr;gap:7px;padding:12px 0;border-bottom:1px solid #393a34;color:#c9c5bb;font-size:10px;line-height:1.5}.activity-mark{color:var(--orange)}.activity-list time{display:block;margin-top:4px;color:#89877f;font-family:var(--mono);font-size:8px}
 .room-bottom-actions{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-top:1px solid #41423c;color:#96938a;font-family:var(--mono);font-size:8px}.room-bottom-actions>span{display:flex;align-items:center;gap:7px}.leave-room-button{padding:7px 9px;border:1px solid #55564e;background:transparent;color:#ddd8ce;font-family:var(--mono);font-size:8px}.leave-room-button:hover{border-color:var(--orange);color:var(--orange)}.room-connection-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:#68432f;color:#fff0dc;font-family:var(--mono);font-size:8px}.room-connection-banner button{padding:5px 8px;border:1px solid #edb083;background:transparent;color:#fff0dc;font:inherit}.room-notice{position:fixed;z-index:20;right:24px;bottom:24px;max-width:min(400px,calc(100vw - 32px));padding:13px 16px;border:1px solid #5a5b52;background:#242520;color:#f1eee6;box-shadow:4px 4px 0 #111;font-size:11px}.room-notice.notice-error{border-color:#f26a3d;color:#ffd8c6}.room-notice-enter-active,.room-notice-leave-active{transition:opacity .18s,transform .18s}.room-notice-enter-from,.room-notice-leave-to{opacity:0;transform:translateY(8px)}.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .listening-room button:focus-visible,.room-lobby button:focus-visible,.room-lobby input:focus-visible,.listening-room input:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.listening-heading button:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 @media(max-width:900px){.room-workspace{grid-template-columns:minmax(0,1fr)}.room-side-column{padding:0 15px 15px}.room-side-panel{min-height:0}.queue-list{max-height:320px}}
 @media(max-width:600px){.lobby-actions{grid-template-columns:1fr}.room-lobby{padding:18px}.room-header{align-items:flex-start;flex-direction:column;padding:14px}.room-header-actions{flex-wrap:wrap;width:100%}.room-presence-pill{margin-right:auto}.room-cover-mark{width:43px}.room-heading-copy h2{max-width:calc(100vw - 100px);font-size:27px}.room-sync-banner{align-items:flex-start;padding:9px 12px}.room-sync-banner small{max-width:210px;line-height:1.4}.audio-prototype-label{max-width:100px;font-size:7px;line-height:1.4;text-align:right}.room-main-column{padding:10px}.room-player-art{height:230px}.art-track-copy h3{font-size:39px}.record-mark{right:13px;width:55px}.room-side-column{padding:0 10px 10px}.room-chat-card{min-height:350px}.room-message-list{max-height:300px;padding:10px}.room-message{max-width:95%}.playback-toolbar{gap:8px}.volume-control{gap:4px;margin-left:0}.volume-control input{width:44px}.transport-toggle{width:22px}.transport-button{width:27px}.room-composer{gap:5px;padding:8px}.room-composer input{font-size:10px}.room-send-button{padding:0 8px}.room-bottom-actions{padding:9px 10px;font-size:7px}.member-manage button{width:25px;height:28px}.room-notice{right:12px;bottom:12px}}
+@media(max-width:600px){.listening-heading{align-items:flex-start;flex-direction:column}.room-add-song-button{align-self:flex-start;margin:2px 0 0}}
+.song-source-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:12px 0;border-bottom:1px solid #41423c}
+.song-source-tabs button{min-height:36px;padding:0 4px;border:0;border-bottom:2px solid transparent;background:transparent;color:#99968d;font-family:var(--mono);font-size:8px;cursor:pointer}
+.song-source-tabs button.selected{border-bottom-color:var(--orange);color:#f1eee6}
+.catalog-search-input,.custom-song-form input,.custom-song-form select{width:100%;height:36px;padding:0 9px;border:1px solid #505149;background:#1a1b18;color:#f1eee6;font-size:10px}
+.custom-song-form{display:grid;gap:7px;margin:12px 0}
+.custom-song-form label{margin-top:3px;color:#aaa79e;font-family:var(--mono);font-size:8px}
+.custom-song-form label span{color:#77766f}
+.custom-song-note{margin:2px 0 4px;color:#99968d;font-size:9px;line-height:1.5}
+.custom-song-submit{display:flex;align-items:center;justify-content:space-between;min-height:36px;padding:0 10px;border:1px solid var(--orange);background:var(--orange);color:#171714;font-family:var(--mono);font-size:9px;cursor:pointer}
+.custom-song-submit:disabled,.song-result-row button:disabled{opacity:.5;cursor:wait}
+.song-source-tabs button:focus-visible,.custom-song-form button:focus-visible,.custom-song-form input:focus-visible,.custom-song-form select:focus-visible,.catalog-search-input:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.record-mark{animation:none}.room-notice-enter-active,.room-notice-leave-active{transition:none}}
 </style>
